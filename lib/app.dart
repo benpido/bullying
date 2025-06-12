@@ -22,7 +22,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _loadThemePreference();
     _loadFacade();
-    _facadeService.initializeIcons();
+    
   }
 
   Future<void> _loadThemePreference() async {
