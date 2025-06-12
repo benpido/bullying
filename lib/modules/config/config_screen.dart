@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/services/contact_service.dart';
 import 'widgets/contact_form.dart';
 import '../../core/routes/app_routes.dart';
+import '../../shared/services/facade_service.dart';
 
 class ConfigScreen extends StatefulWidget {
   final bool isDarkModeEnabled;
@@ -21,6 +22,7 @@ class ConfigScreen extends StatefulWidget {
 class ConfigScreenState extends State<ConfigScreen> {
   late bool _isDarkModeEnabled;
   final ContactService contactService = ContactService();
+  final FacadeService facadeService = FacadeService();
 
   @override
   void initState() {
@@ -73,8 +75,8 @@ class ConfigScreenState extends State<ConfigScreen> {
         itemBuilder: (context, index) {
           final facade = facades[index];
           return GestureDetector(
-            onTap: () {
-              AppRoutes.currentFacade = facade['route'] as String;
+            onTap: () async {
+              await facadeService.setFacade(facade['route'] as String);
               Navigator.pushReplacementNamed(
                 context,
                 facade['route'] as String,

@@ -4,6 +4,7 @@ import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'modules/config/config_screen.dart';
+import 'shared/services/facade_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -14,11 +15,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isDarkModeEnabled = false;
+  final FacadeService _facadeService = FacadeService();
 
   @override
   void initState() {
     super.initState();
     _loadThemePreference();
+    _loadFacade();
   }
 
   Future<void> _loadThemePreference() async {
@@ -27,6 +30,11 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = prefs.getBool('isDarkModeEnabled') ?? false;
     });
   }
+    Future<void> _loadFacade() async {
+    await _facadeService.loadSavedFacade();
+    setState(() {});
+  }
+
 
   void updateTheme(bool isDark) {
     setState(() {
@@ -42,7 +50,7 @@ class _MyAppState extends State<MyApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _isDarkModeEnabled ? ThemeMode.dark : ThemeMode.light,
-      initialRoute: AppRoutes.home,
+      home: AppRoutes.getCurrentFacade(),
       routes: {
         ...AppRoutes.routes,
         AppRoutes.config:
