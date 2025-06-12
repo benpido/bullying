@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/routes/app_routes.dart';
 import 'package:math_expressions/math_expressions.dart';
-import '../config/config_screen.dart'; // Importe para usar ConfigScreen
+
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -109,19 +109,7 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   }
 
   void _navigateToConfig() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => ConfigScreen(
-              isDarkModeEnabled:
-                  Theme.of(context).brightness == Brightness.dark,
-              onThemeChanged: (bool value) {
-                // TODO: implemente a mudança real do tema aqui
-              },
-            ),
-      ),
-    );
+    Navigator.pushNamed(context, AppRoutes.config);
   }
 
   Widget buildButton(

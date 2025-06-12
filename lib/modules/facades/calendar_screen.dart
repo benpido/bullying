@@ -4,7 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../core/routes/app_routes.dart';
-import '../config/config_screen.dart';
+
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -130,20 +130,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   IconButton(
                     icon: const Icon(Icons.settings),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => ConfigScreen(
-                                isDarkModeEnabled:
-                                    Theme.of(context).brightness ==
-                                    Brightness.dark,
-                                onThemeChanged: (bool value) {
-                                  // Aqui você deve implementar a alteração real do tema
-                                },
-                              ),
-                        ),
-                      );
+                      Navigator.pushNamed(context, AppRoutes.config);
                     },
                   ),
                 ],
