@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../modules/splash/splash_screen.dart';
 import '../../modules/home/home_screen.dart';
 import '../../modules/emergency/emergency_screen.dart';
-import '../../modules/config/config_screen.dart';
 import '../../modules/auth/lock_screen.dart';
 
 // Fachadas (máscaras)
