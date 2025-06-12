@@ -12,7 +12,7 @@ import '../../modules/facades/calculator_screen.dart';
 import '../../modules/facades/notes_screen.dart';
 
 class AppRoutes {
-  static const String splash = '/';
+  static const String splash = '/splash';
   static const String home = '/home';
   static const String emergency = '/emergency';
   static const String config = '/config';

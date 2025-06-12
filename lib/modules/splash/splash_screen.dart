@@ -12,7 +12,7 @@ class SplashScreen extends StatelessWidget {
     Future.delayed(const Duration(seconds: 2), () {
       // Verifica se o widget ainda está montado antes de chamar o Navigator
       if (!context.mounted) return;
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.currentFacade);
     });
 
     return const Scaffold(body: Center(child: SplashLogo()));
