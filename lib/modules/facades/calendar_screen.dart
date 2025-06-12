@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import '../../shared/services/event_service.dart';
 import '../../core/routes/app_routes.dart';
 
 
@@ -19,6 +18,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final Map<DateTime, List<String>> _events = {};
   final TextEditingController _eventController = TextEditingController();
   int _secretTapCount = 0;
+  final EventService _eventService = EventService();
+
+    @override
+  void dispose() {
+    _eventController.dispose();
+    // Clean up any additional controllers or resources here
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -28,26 +35,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Future<void> _loadSavedEvents() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? eventsJson = prefs.getString('events');
-    if (eventsJson != null) {
-      final Map<String, dynamic> decoded = json.decode(eventsJson);
-      setState(() {
-        _events.clear();
-        decoded.forEach((key, value) {
-          final date = DateTime.parse(key);
-          _events[date] = List<String>.from(value);
-        });
-      });
-    }
+    final loaded = await _eventService.loadEvents();
+    setState(() {
+      _events
+        ..clear()
+        ..addAll(loaded);
+    });
   }
 
   Future<void> _saveEvents() async {
-    final prefs = await SharedPreferences.getInstance();
-    final Map<String, dynamic> encoded = _events.map(
-      (key, value) => MapEntry(key.toIso8601String(), value),
-    );
-    await prefs.setString('events', json.encode(encoded));
+    await _eventService.saveEvents(_events);
   }
 
   List<String> _getEventsForDay(DateTime day) {

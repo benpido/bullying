@@ -1,10 +1,14 @@
+package com.example.bullying
+
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.content.ComponentName
 import android.content.pm.PackageManager
-package com.example.bullying
 
 import io.flutter.embedding.android.FlutterActivity
+
+
+
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "bullying/icon"
