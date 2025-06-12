@@ -6,6 +6,9 @@ import android.content.ComponentName
 import android.content.pm.PackageManager
 import io.flutter.embedding.android.FlutterActivity
 
+
+
+
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "bullying/icon"
 

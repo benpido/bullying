@@ -111,7 +111,13 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   void _navigateToConfig() {
     Navigator.pushNamed(context, AppRoutes.config);
   }
-
+  @override
+  void dispose() {
+    for (final controller in _buttonAnimations.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
   Widget buildButton(
     String value,
     Color color, {
