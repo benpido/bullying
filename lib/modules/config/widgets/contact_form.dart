@@ -79,7 +79,7 @@ class _ContactFormState extends State<ContactForm> {
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
-        const Text('Contacto de Emergência 2'),
+        const Text('Contacto de Emergencia 2'),
         TextField(
           controller: _nameController2,
           decoration: const InputDecoration(labelText: 'Nombre'),

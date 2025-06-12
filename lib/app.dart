@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'modules/config/config_screen.dart';
 import 'shared/services/facade_service.dart';
+import 'shared/services/shake_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -16,12 +17,16 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isDarkModeEnabled = false;
   final FacadeService _facadeService = FacadeService();
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late ShakeService _shakeService;
 
   @override
   void initState() {
     super.initState();
     _loadThemePreference();
     _loadFacade();
+    _shakeService = ShakeService(navigatorKey: _navigatorKey);
+    _shakeService.start();
     
   }
 
@@ -42,10 +47,16 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = isDark;
     });
   }
+  @override
+  void dispose() {
+    _shakeService.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'App Camuflada',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

@@ -68,7 +68,7 @@ class ConfigScreenState extends State<ConfigScreen> {
     ];
 
     return SizedBox(
-      height: 140,
+      height: 80,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: facades.length,
@@ -83,7 +83,7 @@ class ConfigScreenState extends State<ConfigScreen> {
               );
             },
             child: Container(
-              width: 120,
+              width: 80,
               margin: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
@@ -101,7 +101,7 @@ class ConfigScreenState extends State<ConfigScreen> {
                 children: [
                   Icon(
                     facade['icon'] as IconData,
-                    size: 48,
+                    size: 20,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 10),

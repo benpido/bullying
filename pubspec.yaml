@@ -34,6 +34,7 @@ dependencies:
   math_expressions: ^2.2.0
   table_calendar: ^3.0.9
   intl: ^0.20.2
+  sensors_plus: ^6.1.1
   flutter_localizations:
     sdk: flutter
 
