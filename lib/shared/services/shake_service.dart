@@ -9,10 +9,14 @@ class ShakeService {
   final double threshold; // g-force
   StreamSubscription<AccelerometerEvent>? _subscription;
   DateTime? _lastTrigger;
+  bool _hasTriggered = false;
+  Timer? _resetTimer;
 
   ShakeService({required this.navigatorKey, this.threshold = 2.7});
 
   void start() {
+    _hasTriggered = false;
+    _resetTimer?.cancel();
     _subscription = accelerometerEvents.listen(_handleEvent);
   }
 
@@ -22,10 +26,14 @@ class ShakeService {
     final gZ = event.z / 9.80665;
     final gForce = sqrt(gX * gX + gY * gY + gZ * gZ);
 
-    if (gForce > threshold) {
+    if (!_hasTriggered && gForce > threshold) {
       final now = DateTime.now();
       if (_lastTrigger == null || now.difference(_lastTrigger!) > const Duration(seconds: 2)) {
-        _lastTrigger = now;
+        _hasTriggered = true;
+        _resetTimer?.cancel();
+        _resetTimer = Timer(const Duration(seconds: 10), () {
+          _hasTriggered = false;
+        });
         navigatorKey.currentState?.pushNamed(AppRoutes.emergency);
       }
     }
