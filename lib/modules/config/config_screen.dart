@@ -75,7 +75,10 @@ class ConfigScreenState extends State<ConfigScreen> {
           return GestureDetector(
             onTap: () {
               AppRoutes.currentFacade = facade['route'] as String;
-              Navigator.pushNamed(context, facade['route'] as String);
+              Navigator.pushReplacementNamed(
+                context,
+                facade['route'] as String,
+              );
             },
             child: Container(
               width: 120,
