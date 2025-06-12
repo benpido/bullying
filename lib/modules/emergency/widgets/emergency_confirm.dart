@@ -23,7 +23,7 @@ class EmergencyConfirmedScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             Text(
-              'Emergência Confirmada!',
+              '¡Emergencia Confirmada!',
               style: TextStyle(
                 fontSize: 38,
                 fontWeight: FontWeight.bold,
@@ -34,7 +34,7 @@ class EmergencyConfirmedScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'A emergência foi acionada com sucesso.\n\nNosso time está pronto para atender.',
+              'La emergencia se activó con éxito.\n\nNuestro equipo está listo para atender.',
               style: TextStyle(
                 fontSize: 20,
                 color: isDarkMode ? Colors.white : Colors.black87,

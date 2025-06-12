@@ -9,7 +9,7 @@ class FinanceSummaryCard extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       child: const Padding(
         padding: EdgeInsets.all(20),
-        child: Text('Balance: \$0.00'),
+        child: Text('Saldo: \$0.00'),
       ),
     );
   }

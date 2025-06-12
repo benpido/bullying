@@ -42,7 +42,7 @@ class _ContactFormState extends State<ContactForm> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Contatos guardados')));
+    ).showSnackBar(const SnackBar(content: Text('Contactos guardados')));
   }
 
   // Carregar os contatos salvos
@@ -68,31 +68,31 @@ class _ContactFormState extends State<ContactForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text('Contacto de Emergência 1'),
+        const Text('Contacto de Emergencia 1'),
         TextField(
           controller: _nameController1,
-          decoration: const InputDecoration(labelText: 'Nome'),
+          decoration: const InputDecoration(labelText: 'Nombre'),
         ),
         TextField(
           controller: _phoneController1,
-          decoration: const InputDecoration(labelText: 'Telefone'),
+          decoration: const InputDecoration(labelText: 'Teléfono'),
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
         const Text('Contacto de Emergência 2'),
         TextField(
           controller: _nameController2,
-          decoration: const InputDecoration(labelText: 'Nome'),
+          decoration: const InputDecoration(labelText: 'Nombre'),
         ),
         TextField(
           controller: _phoneController2,
-          decoration: const InputDecoration(labelText: 'Telefone'),
+          decoration: const InputDecoration(labelText: 'Teléfono'),
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _saveContacts,
-          child: const Text('Salvar Contatos'),
+          child: const Text('Guardar Contactos'),
         ),
       ],
     );

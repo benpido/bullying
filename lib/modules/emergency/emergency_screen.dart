@@ -86,7 +86,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Contagem regressiva para emergência',
+              'Cuenta regresiva para emergencia',
               style: TextStyle(
                 color: isDarkMode ? Colors.white : Colors.black87,
                 fontWeight: FontWeight.bold,
@@ -141,7 +141,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
               child: const Text(
-                'Cancelar Emergência',
+                'Cancelar Emergencia',
                 style: TextStyle(
                   fontSize: 22,
                   color: Colors.white,

@@ -46,12 +46,12 @@ class ConfigScreenState extends State<ConfigScreen> {
   Widget _buildFacadeCarousel() {
     final facades = [
       {
-        'label': 'Finanças',
+        'label': 'Fianzas',
         'route': AppRoutes.home,
         'icon': Icons.account_balance_wallet,
       },
       {
-        'label': 'Calendário',
+        'label': 'Calendario',
         'route': AppRoutes.calendar,
         'icon': Icons.calendar_month,
       },
@@ -126,18 +126,18 @@ class ConfigScreenState extends State<ConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text('Configurações de Emergência')),
+      appBar: AppBar(title: const Text('Configuraciones de Emergencia')),
       body: SingleChildScrollView(
         // Para evitar overflow em telas menores
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Modo Escuro', style: TextStyle(fontSize: 16)),
+            const Text('Modo Oscuro', style: TextStyle(fontSize: 16)),
             Switch(value: _isDarkModeEnabled, onChanged: _toggleTheme),
             const SizedBox(height: 20),
 
-            const Text('Selecionar Fachada:', style: TextStyle(fontSize: 16)),
+            const Text('Seleccionar Fachada:', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
             _buildFacadeCarousel(),
             const SizedBox(height: 20),

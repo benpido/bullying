@@ -17,7 +17,7 @@ class EmergencyButton extends StatelessWidget {
         shadowColor: Colors.black.withOpacity(0.2),
         textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
-      child: const Text('Emergência'),
+      child: const Text('Emergencia'),
     );
   }
 }
