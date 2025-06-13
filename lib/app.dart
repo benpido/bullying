@@ -8,6 +8,7 @@ import 'shared/services/facade_service.dart';
 import 'shared/services/shake_service.dart';
 import 'shared/services/noise_service.dart';
 import 'modules/home/home_screen.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -32,6 +33,11 @@ class _MyAppState extends State<MyApp> {
     _shakeService.start();
     _noiseService = NoiseService(navigatorKey: _navigatorKey);
     _noiseService.start();
+    FlutterBackgroundService()
+        .on('emergency')
+        .listen((event) {
+      _navigatorKey.currentState?.pushNamed(AppRoutes.emergency);
+    });
     
   }
 

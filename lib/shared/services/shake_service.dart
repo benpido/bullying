@@ -5,14 +5,15 @@ import 'package:sensors_plus/sensors_plus.dart';
 import '../../core/routes/app_routes.dart';
 
 class ShakeService {
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
   final double threshold; // g-force
+  final void Function()? onTrigger;
   StreamSubscription<AccelerometerEvent>? _subscription;
   DateTime? _lastTrigger;
   bool _hasTriggered = false;
   Timer? _resetTimer;
 
-  ShakeService({required this.navigatorKey, this.threshold = 2.7});
+  ShakeService({this.navigatorKey, this.threshold = 2.7, this.onTrigger});
 
   void start() {
     _hasTriggered = false;
@@ -34,7 +35,11 @@ class ShakeService {
         _resetTimer = Timer(const Duration(seconds: 10), () {
           _hasTriggered = false;
         });
-        navigatorKey.currentState?.pushNamed(AppRoutes.emergency);
+        if (onTrigger != null) {
+          onTrigger!();
+        } else {
+          navigatorKey?.currentState?.pushNamed(AppRoutes.emergency);
+        }
       }
     }
   }

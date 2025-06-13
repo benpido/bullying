@@ -5,8 +5,9 @@ import '../../core/routes/app_routes.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NoiseService {
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState>? navigatorKey;
   final double decibelThreshold;
+  final void Function()? onTrigger;
   NoiseMeter? _noiseMeter;
   StreamSubscription<NoiseReading>? _subscription;
   DateTime? _lastTrigger;
@@ -15,8 +16,9 @@ class NoiseService {
   final ValueNotifier<double> currentDb = ValueNotifier<double>(0);
 
   NoiseService({
-    required this.navigatorKey,
+    this.navigatorKey,
     this.decibelThreshold = 80.0,
+    this.onTrigger,
   });
 
   Future<void> start() async {
@@ -42,7 +44,11 @@ class NoiseService {
         _resetTimer = Timer(const Duration(seconds: 10), () {
           _hasTriggered = false;
         });
-        navigatorKey.currentState?.pushNamed(AppRoutes.emergency);
+        if (onTrigger != null) {
+          onTrigger!();
+        } else {
+          navigatorKey?.currentState?.pushNamed(AppRoutes.emergency);
+        }
         _lastTrigger = now;
       }
     }
