@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import './widgets/emergency_confirm.dart';
+import '../../shared/services/recording_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -51,6 +52,8 @@ class _EmergencyScreenState extends State<EmergencyScreen>
   }
 
   void _triggerEmergency() {
+    final recorder = RecordingService();
+    recorder.recordFor30Seconds();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const EmergencyConfirmedScreen()),
