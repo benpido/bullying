@@ -35,9 +35,9 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: const [
-                      _MetricItem(label: 'Ingresos', value: '€ 12.345'),
-                      _MetricItem(label: 'Gastos', value: '€ 7.890'),
-                      _MetricItem(label: 'Balance', value: '€ 4.455'),
+                      _MetricItem(label: 'Ingresos', value: '$ 12.345'),
+                      _MetricItem(label: 'Gastos', value: '$ 7.890'),
+                      _MetricItem(label: 'Balance', value: '$ 4.455'),
                     ],
                   ),
                 ),

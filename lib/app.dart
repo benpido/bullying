@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'modules/config/config_screen.dart';
 import 'shared/services/facade_service.dart';
 import 'shared/services/shake_service.dart';
+import 'shared/services/noise_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -19,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   final FacadeService _facadeService = FacadeService();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late ShakeService _shakeService;
+  late NoiseService _noiseService;
 
   @override
   void initState() {
@@ -27,6 +29,8 @@ class _MyAppState extends State<MyApp> {
     _loadFacade();
     _shakeService = ShakeService(navigatorKey: _navigatorKey);
     _shakeService.start();
+    _noiseService = NoiseService(navigatorKey: _navigatorKey);
+    _noiseService.start();
     
   }
 
@@ -50,6 +54,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _shakeService.dispose();
+    _noiseService.dispose();
     super.dispose();
   }
 
