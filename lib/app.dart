@@ -7,6 +7,7 @@ import 'modules/config/config_screen.dart';
 import 'shared/services/facade_service.dart';
 import 'shared/services/shake_service.dart';
 import 'shared/services/noise_service.dart';
+import 'modules/home/home_screen.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -68,14 +69,15 @@ class _MyAppState extends State<MyApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: _isDarkModeEnabled ? ThemeMode.dark : ThemeMode.light,
       initialRoute: AppRoutes.splash,
-      routes: {
-        ...AppRoutes.routes,
-        AppRoutes.config:
-            (context) => ConfigScreen(
+      routes: () {
+        final routes = Map<String, WidgetBuilder>.from(AppRoutes.routes);
+        routes[AppRoutes.home] = (_) => HomeScreen(noiseService: _noiseService);
+        routes[AppRoutes.config] = (context) => ConfigScreen(
               isDarkModeEnabled: _isDarkModeEnabled,
               onThemeChanged: updateTheme,
-            ),
-      },
+            );
+        return routes;
+      }(),
       locale: const Locale('es', 'ES'),
       supportedLocales: const [Locale('es', 'ES')],
       localizationsDelegates: const [

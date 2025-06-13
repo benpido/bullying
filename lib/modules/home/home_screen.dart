@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
 import 'widgets/finance_summary_card.dart';
+import '../../shared/services/noise_service.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final NoiseService noiseService;
+  const HomeScreen({super.key, required this.noiseService});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +27,14 @@ class HomeScreen extends StatelessWidget {
             children: [
               const FinanceSummaryCard(),
               const SizedBox(height: 16),
+              ValueListenableBuilder<double>(
+                valueListenable: noiseService.currentDb,
+                builder: (context, value, _) {
+                  final formatted = value.toStringAsFixed(1);
+                  return Text('Nivel de ruido: $formatted dB');
+                },
+              ),
+              const SizedBox(height: 16),
 
               Card(
                 elevation: 2,
@@ -35,9 +45,9 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: const [
-                      _MetricItem(label: 'Ingresos', value: '$ 12.345'),
-                      _MetricItem(label: 'Gastos', value: '$ 7.890'),
-                      _MetricItem(label: 'Balance', value: '$ 4.455'),
+                      _MetricItem(label: 'Ingresos', value: r'$ 12.345'),
+                      _MetricItem(label: 'Gastos', value: r'$ 7.890'),
+                      _MetricItem(label: 'Balance', value: r'$ 4.455'),
                     ],
                   ),
                 ),

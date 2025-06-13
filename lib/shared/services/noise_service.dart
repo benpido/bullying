@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:noise_meter/noise_meter.dart';
 import '../../core/routes/app_routes.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NoiseService {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -11,16 +12,20 @@ class NoiseService {
   DateTime? _lastTrigger;
   bool _hasTriggered = false;
   Timer? _resetTimer;
+  final ValueNotifier<double> currentDb = ValueNotifier<double>(0);
 
   NoiseService({
     required this.navigatorKey,
-    this.decibelThreshold = 85.0,
+    this.decibelThreshold = 80.0,
   });
 
-  void start() {
+  Future<void> start() async {
+    final status = await Permission.microphone.request();
+    if (!status.isGranted) return;
     _noiseMeter = NoiseMeter();
     _hasTriggered = false;
     _resetTimer?.cancel();
+    currentDb.value = 0;
     try {
       _subscription =
           _noiseMeter!.noise.listen(_onData, onError: onError);
@@ -28,6 +33,7 @@ class NoiseService {
   }
 
   void _onData(NoiseReading reading) {
+    currentDb.value = reading.meanDecibel;
     if (!_hasTriggered && reading.meanDecibel >= decibelThreshold) {
       final now = DateTime.now();
       if (_lastTrigger == null || now.difference(_lastTrigger!) > const Duration(seconds: 2)) {
@@ -46,5 +52,6 @@ class NoiseService {
 
   void dispose() {
     _subscription?.cancel();
+    currentDb.dispose();
   }
 }

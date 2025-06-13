@@ -1,7 +1,6 @@
 // lib/core/routes/app_routes.dart
 import 'package:flutter/material.dart';
 import '../../modules/splash/splash_screen.dart';
-import '../../modules/home/home_screen.dart';
 import '../../modules/emergency/emergency_screen.dart';
 import '../../modules/auth/lock_screen.dart';
 
@@ -26,7 +25,7 @@ class AppRoutes {
 
   static final Map<String, WidgetBuilder> routes = {
     splash: (_) => const SplashScreen(),
-    home: (_) => const HomeScreen(),
+    
     emergency: (_) => const EmergencyScreen(),
     //config: (_) => ConfigScreen(),
     lock: (_) => const LockScreen(),
@@ -46,7 +45,7 @@ class AppRoutes {
       case notes:
         return const NotesScreen();
       default:
-        return const HomeScreen(); // O cualquier pantalla predeterminada
+        return const SizedBox.shrink(); // Placeholder when no facade selected
     }
   }
 }
