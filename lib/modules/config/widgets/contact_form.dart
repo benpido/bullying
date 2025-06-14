@@ -4,8 +4,13 @@ import '../../../shared/services/contact_service.dart';
 
 class ContactForm extends StatefulWidget {
   final ContactService contactService;
+  final VoidCallback? onContactsSaved;
 
-  const ContactForm({super.key, required this.contactService});
+  const ContactForm({
+    super.key,
+    required this.contactService,
+    this.onContactsSaved,
+  });
 
   @override
   State<ContactForm> createState() => _ContactFormState();
@@ -43,6 +48,7 @@ class _ContactFormState extends State<ContactForm> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Contactos guardados')));
+    widget.onContactsSaved?.call();
   }
 
   // Carregar os contatos salvos

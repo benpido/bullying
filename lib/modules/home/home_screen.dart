@@ -15,7 +15,11 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.config),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.lock,
+              arguments: AppRoutes.config,
+            ),
           ),
         ],
       ),
@@ -39,7 +43,8 @@ class HomeScreen extends StatelessWidget {
               Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -65,7 +70,10 @@ class HomeScreen extends StatelessWidget {
                 children: const [
                   _CategoryChip(label: 'Ahorro', icon: Icons.savings),
                   _CategoryChip(label: 'Comida', icon: Icons.fastfood),
-                  _CategoryChip(label: 'Transporte', icon: Icons.directions_car),
+                  _CategoryChip(
+                    label: 'Transporte',
+                    icon: Icons.directions_car,
+                  ),
                   _CategoryChip(label: 'Ocio', icon: Icons.movie),
                 ],
               ),
@@ -94,10 +102,11 @@ class HomeScreen extends StatelessWidget {
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                onPressed: () => Navigator.pushNamed(
-                    context, AppRoutes.emergency),
+                onPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.emergency),
               ),
             ],
           ),
@@ -135,8 +144,7 @@ class _CategoryChip extends StatelessWidget {
       avatar: Icon(icon, size: 20, color: Theme.of(context).primaryColor),
       label: Text(label),
       backgroundColor: Colors.grey.shade100,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 }

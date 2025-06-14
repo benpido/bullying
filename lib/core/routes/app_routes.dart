@@ -28,7 +28,11 @@ class AppRoutes {
     
     emergency: (_) => const EmergencyScreen(),
     //config: (_) => ConfigScreen(),
-    lock: (_) => const LockScreen(),
+    lock: (context) {
+      final next =
+          ModalRoute.of(context)?.settings.arguments as String? ?? home;
+      return LockScreen(nextRoute: next);
+    },
 
     // Rutas de fachadas
     calendar: (_) => const CalendarScreen(),

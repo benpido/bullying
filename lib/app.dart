@@ -11,6 +11,7 @@ import 'modules/home/home_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/recording_service.dart';
+import 'shared/services/contact_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -27,12 +28,15 @@ class _MyAppState extends State<MyApp> {
   late NoiseService _noiseService;
   late NotificationService _notificationService;
   final RecordingService _recordingService = RecordingService();
+  final ContactService _contactService = ContactService();
+  bool _requireContacts = false;
 
   @override
   void initState() {
     super.initState();
     _loadThemePreference();
     _loadFacade();
+    _checkContacts();
     _notificationService = NotificationService(_recordingService);
     _notificationService.init();
     _shakeService = ShakeService(
@@ -47,9 +51,7 @@ class _MyAppState extends State<MyApp> {
       ),
     );
     _noiseService.start();
-    FlutterBackgroundService()
-        .on('emergency')
-        .listen((event) {
+    FlutterBackgroundService().on('emergency').listen((event) {
       _notificationService.showEmergencyNotification(
         onTimeout: _startRecording,
       );
@@ -63,7 +65,17 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = prefs.getBool('isDarkModeEnabled') ?? false;
     });
   }
-    Future<void> _loadFacade() async {
+    Future<void> _checkContacts() async {
+    final contacts = await _contactService.getContacts();
+    if (contacts.isEmpty) {
+      _requireContacts = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
+      });
+    }
+  }
+
+  Future<void> _loadFacade() async {
     await _facadeService.loadSavedFacade();
     setState(() {});
   }
@@ -74,9 +86,18 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = isDark;
     });
   }
+
   void _startRecording() {
     _recordingService.recordFor30Seconds();
   }
+
+  void _onContactsSaved() {
+    if (_requireContacts) {
+      _requireContacts = false;
+      _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.home);
+    }
+  }
+
   @override
   void dispose() {
     _shakeService.dispose();
@@ -100,8 +121,9 @@ class _MyAppState extends State<MyApp> {
         routes[AppRoutes.home] = (_) => HomeScreen(noiseService: _noiseService);
         routes[AppRoutes.config] = (context) => ConfigScreen(
               isDarkModeEnabled: _isDarkModeEnabled,
-              onThemeChanged: updateTheme,
-            );
+          onThemeChanged: updateTheme,
+          onContactsSaved: _onContactsSaved,
+        );
         return routes;
       }(),
       locale: const Locale('es', 'ES'),

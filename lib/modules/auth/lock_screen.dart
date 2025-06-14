@@ -3,10 +3,11 @@ import '../../core/routes/app_routes.dart';
 import 'widgets/lock_input.dart';
 
 class LockScreen extends StatelessWidget {
-  const LockScreen({super.key});
+  final String nextRoute;
+  const LockScreen({super.key, this.nextRoute = AppRoutes.home});
 
   void _onUnlockSuccess(BuildContext context) {
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
+    Navigator.pushReplacementNamed(context, nextRoute);
   }
 
   @override

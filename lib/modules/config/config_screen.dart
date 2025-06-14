@@ -8,11 +8,13 @@ import '../../shared/services/facade_service.dart';
 class ConfigScreen extends StatefulWidget {
   final bool isDarkModeEnabled;
   final Function(bool) onThemeChanged;
+  final VoidCallback? onContactsSaved;
 
   const ConfigScreen({
     super.key,
     required this.isDarkModeEnabled,
     required this.onThemeChanged,
+    this.onContactsSaved,
   });
 
   @override
@@ -60,11 +62,7 @@ class ConfigScreenState extends State<ConfigScreen> {
         'route': AppRoutes.calculator,
         'icon': Icons.calculate,
       },
-      {
-        'label': 'Notas',
-        'route': AppRoutes.notes,
-        'icon': Icons.note_alt,
-      },
+      {'label': 'Notas', 'route': AppRoutes.notes, 'icon': Icons.note_alt},
     ];
 
     return SizedBox(
@@ -142,7 +140,10 @@ class ConfigScreenState extends State<ConfigScreen> {
             _buildFacadeCarousel(),
             const SizedBox(height: 20),
 
-            ContactForm(contactService: contactService),
+            ContactForm(
+              contactService: contactService,
+              onContactsSaved: widget.onContactsSaved,
+            ),
           ],
         ),
       ),
