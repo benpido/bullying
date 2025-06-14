@@ -12,9 +12,7 @@ class LockInput extends StatefulWidget {
 class _LockInputState extends State<LockInput> with TickerProviderStateMixin {
   final String _storedPassword = '1234'; // Senha simulada
   String _inputPassword = ''; // Armazenar a senha digitada
-  bool _isIncorrectPassword = false; // Indica se a senha está errada
-  bool _isUnlocked = false; // Controle de desbloqueio
-
+  bool _isIncorrectPassword = false;
   late AnimationController _animationController;
 
   @override
@@ -29,7 +27,6 @@ class _LockInputState extends State<LockInput> with TickerProviderStateMixin {
   void _checkPassword() {
     if (_inputPassword == _storedPassword) {
       setState(() {
-        _isUnlocked = true;
         _isIncorrectPassword = false;
       });
       widget.onUnlock(); // Desbloqueia a tela automaticamente

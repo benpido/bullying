@@ -6,6 +6,7 @@ class RecordingService {
   final AudioRecorder _record = AudioRecorder();
 
   Future<void> recordFor30Seconds() async {
+    if (await _record.isRecording()) return;
     if (!await _record.hasPermission()) return;
 
     final dir = await getTemporaryDirectory();
@@ -21,6 +22,8 @@ class RecordingService {
     );
 
     await Future.delayed(const Duration(seconds: 30));
-    await _record.stop();
+    if (await _record.isRecording()) {
+      await _record.stop();
+    }
   }
 }

@@ -9,6 +9,8 @@ import 'shared/services/shake_service.dart';
 import 'shared/services/noise_service.dart';
 import 'modules/home/home_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'shared/services/notification_service.dart';
+import 'shared/services/recording_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -23,20 +25,34 @@ class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late ShakeService _shakeService;
   late NoiseService _noiseService;
+  late NotificationService _notificationService;
+  final RecordingService _recordingService = RecordingService();
 
   @override
   void initState() {
     super.initState();
     _loadThemePreference();
     _loadFacade();
-    _shakeService = ShakeService(navigatorKey: _navigatorKey);
+    _notificationService = NotificationService();
+    _notificationService.init();
+    _shakeService = ShakeService(
+      onTrigger: () => _notificationService.showEmergencyNotification(
+        onTimeout: _startRecording,
+      ),
+    );
     _shakeService.start();
-    _noiseService = NoiseService(navigatorKey: _navigatorKey);
+    _noiseService = NoiseService(
+      onTrigger: () => _notificationService.showEmergencyNotification(
+        onTimeout: _startRecording,
+      ),
+    );
     _noiseService.start();
     FlutterBackgroundService()
         .on('emergency')
         .listen((event) {
-      _navigatorKey.currentState?.pushNamed(AppRoutes.emergency);
+      _notificationService.showEmergencyNotification(
+        onTimeout: _startRecording,
+      );
     });
     
   }
@@ -58,10 +74,14 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = isDark;
     });
   }
+  void _startRecording() {
+    _recordingService.recordFor30Seconds();
+  }
   @override
   void dispose() {
     _shakeService.dispose();
     _noiseService.dispose();
+    _notificationService.cancelEmergency();
     super.dispose();
   }
 
