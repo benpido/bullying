@@ -1,6 +1,7 @@
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'noise_service.dart';
 import 'shake_service.dart';
 
@@ -23,13 +24,12 @@ Future<void> initializeBackgroundService() async {
 @pragma('vm:entry-point')
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
-  DartPluginRegistrant.ensureInitialized();
   return true;
 }
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   final noiseService =
       NoiseService(onTrigger: () => service.invoke('emergency'));
   final shakeService =

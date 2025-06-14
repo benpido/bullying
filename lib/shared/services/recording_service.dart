@@ -3,7 +3,7 @@ import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 
 class RecordingService {
-  final Record _record = Record();
+  final AudioRecorder _record = AudioRecorder();
 
   Future<void> recordFor30Seconds() async {
     if (!await _record.hasPermission()) return;
@@ -13,9 +13,11 @@ class RecordingService {
 
     await _record.start(
       path: path,
-      encoder: AudioEncoder.aacLc,
-      bitRate: 128000,
-      samplingRate: 44100,
+      const RecordConfig(
+        encoder: AudioEncoder.aacLc,
+        bitRate: 128000,
+        sampleRate: 44100,
+      ),
     );
 
     await Future.delayed(const Duration(seconds: 30));
