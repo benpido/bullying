@@ -1,0 +1,52 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:record/record.dart';
+import 'package:fake_async/fake_async.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:bullying/shared/services/recording_service.dart';
+
+class RecordConfigFake extends Fake implements RecordConfig {}
+
+class FakePathProviderPlatform extends PathProviderPlatform with Fake {
+  @override
+  Future<String?> getTemporaryPath() async => '/tmp';
+}
+
+class MockRecorder extends Mock implements AudioRecorder {}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() {
+    registerFallbackValue(RecordConfigFake());
+    PathProviderPlatform.instance = FakePathProviderPlatform();
+  });
+  int startCount = 0;
+  late MockRecorder recorder;
+  late RecordingService service;
+
+  setUp(() {
+    recorder = MockRecorder();
+    service = RecordingService(recorder: recorder, duration: const Duration(seconds: 1));
+    when(() => recorder.isRecording()).thenAnswer((_) async => false);
+    when(() => recorder.hasPermission()).thenAnswer((_) async => true);
+    startCount = 0;
+    when(() => recorder.start(any(), path: any(named: 'path'))).thenAnswer((_) async {
+      startCount++;
+    });
+    when(() => recorder.stop()).thenAnswer((_) async {});
+  });
+
+  test('recording only starts once', () {
+    fakeAsync((async) {
+      service.recordFor30Seconds();
+      async.flushMicrotasks();
+      when(() => recorder.isRecording()).thenAnswer((_) async => true);
+      service.recordFor30Seconds();
+      async.flushMicrotasks();
+      async.elapse(const Duration(seconds: 1));
+      async.flushMicrotasks();
+      expect(startCount, 1);
+      verify(() => recorder.stop()).called(1);
+    });
+  });
+}

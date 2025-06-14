@@ -3,8 +3,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin;
+
+  NotificationService([FlutterLocalNotificationsPlugin? plugin])
+      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   Timer? _timer;
   Future<void> init() async {

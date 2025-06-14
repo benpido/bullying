@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../core/routes/app_routes.dart';
+import 'package:flutter/foundation.dart';
 
 class ShakeService {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -43,7 +44,9 @@ class ShakeService {
       }
     }
   }
-
+  @visibleForTesting
+  void handleAccelerometerEvent(AccelerometerEvent event) => _handleEvent(event);
+  
   void dispose() {
     _subscription?.cancel();
   }

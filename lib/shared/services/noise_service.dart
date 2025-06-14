@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:noise_meter/noise_meter.dart';
 import '../../core/routes/app_routes.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/foundation.dart';
 
 class NoiseService {
   final GlobalKey<NavigatorState>? navigatorKey;
@@ -53,7 +54,9 @@ class NoiseService {
       }
     }
   }
-
+  
+  @visibleForTesting
+  void handleNoiseReading(NoiseReading reading) => _onData(reading);
   void onError(Object error) {}
 
   void dispose() {

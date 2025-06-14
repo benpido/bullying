@@ -3,7 +3,11 @@ import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 
 class RecordingService {
-  final AudioRecorder _record = AudioRecorder();
+  final AudioRecorder _record;
+  final Duration duration;
+
+  RecordingService({AudioRecorder? recorder, this.duration = const Duration(seconds: 30)})
+      : _record = recorder ?? AudioRecorder();
 
   Future<void> recordFor30Seconds() async {
     if (await _record.isRecording()) return;
@@ -21,7 +25,7 @@ class RecordingService {
       ),
     );
 
-    await Future.delayed(const Duration(seconds: 30));
+    await Future.delayed(duration);
     if (await _record.isRecording()) {
       await _record.stop();
     }
