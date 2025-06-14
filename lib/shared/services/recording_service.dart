@@ -5,12 +5,14 @@ import 'package:path_provider/path_provider.dart';
 class RecordingService {
   final AudioRecorder _record;
   final Duration duration;
+  bool _isRecording = false;
+  bool get isRecording => _isRecording;
 
   RecordingService({AudioRecorder? recorder, this.duration = const Duration(seconds: 30)})
       : _record = recorder ?? AudioRecorder();
 
   Future<void> recordFor30Seconds() async {
-    if (await _record.isRecording()) return;
+    if (_isRecording || await _record.isRecording()) return;
     if (!await _record.hasPermission()) return;
 
     final dir = await getTemporaryDirectory();
@@ -25,9 +27,11 @@ class RecordingService {
       ),
     );
 
+    _isRecording = true;
     await Future.delayed(duration);
     if (await _record.isRecording()) {
       await _record.stop();
     }
+    _isRecording = false;
   }
 }

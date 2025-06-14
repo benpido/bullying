@@ -2,11 +2,14 @@ import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'recording_service.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
+  final RecordingService _recordingService;
 
-  NotificationService([FlutterLocalNotificationsPlugin? plugin])
+  NotificationService(this._recordingService,
+      [FlutterLocalNotificationsPlugin? plugin])
       : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   Timer? _timer;
@@ -24,6 +27,7 @@ class NotificationService {
   }
 
   Future<void> showEmergencyNotification({required VoidCallback onTimeout}) async {
+    if (_recordingService.isRecording) return;
     _timer?.cancel();
     const androidDetails = AndroidNotificationDetails(
       'emergency_channel',

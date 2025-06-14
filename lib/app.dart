@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _loadThemePreference();
     _loadFacade();
-    _notificationService = NotificationService();
+    _notificationService = NotificationService(_recordingService);
     _notificationService.init();
     _shakeService = ShakeService(
       onTrigger: () => _notificationService.showEmergencyNotification(
