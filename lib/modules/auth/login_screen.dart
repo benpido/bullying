@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/routes/app_routes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,27 +18,26 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     setState(() => _error = null);
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _email.text,
         password: _password.text,
       );
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.splash);
       }
-    } catch (e) {
-      setState(() => _error = e.toString());
-    }
-  }
 
-  Future<void> _register() async {
-    setState(() => _error = null);
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email.text,
-        password: _password.text,
-      );
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.splash);
+      final uid = cred.user!.uid;
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      final data = doc.data();
+      final hasAdmin = data?['adminId'] != null;
+      final disabled = data?['disabled'] == true;
+      if (!doc.exists || !hasAdmin || disabled) {
+        await FirebaseAuth.instance.signOut();
+        setState(() => _error = 'Cuenta deshabilitada');
+        return;
       }
     } catch (e) {
       setState(() => _error = e.toString());
@@ -68,10 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _login,
                 child: const Text('Login'),
               ),
-              TextButton(
-                onPressed: _register,
-                child: const Text('Registrarse'),
-              ),
+              
               if (_error != null) ...[
                 const SizedBox(height: 8),
                 Text(_error!, style: const TextStyle(color: Colors.red)),
