@@ -70,11 +70,11 @@ class _MyAppState extends State<MyApp> {
     });
   }
     Future<void> _checkContacts() async {
-    final contacts = await _contactService.getContacts();
-    if (contacts.isEmpty) {
-      _requireContacts = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
+      final contacts = await _contactService.getContacts();
+      if (contacts.isEmpty) {
+        _requireContacts = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
       });
     }
   }
@@ -92,7 +92,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _startRecording() {
-    _recordingService.recordFor30Seconds();
+    _recordingService.recordFor30Seconds(
+      onInsufficientStorage: _notificationService.showLowStorageWarning,
+    );
   }
 
   void _onContactsSaved() {

@@ -8,9 +8,10 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
   final RecordingService _recordingService;
 
-  NotificationService(this._recordingService,
-      [FlutterLocalNotificationsPlugin? plugin])
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  NotificationService(
+    this._recordingService, [
+    FlutterLocalNotificationsPlugin? plugin,
+  ]) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   Timer? _timer;
   Future<void> init() async {
@@ -18,15 +19,19 @@ class NotificationService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
     const settings = InitializationSettings(android: android, iOS: ios);
-    await _plugin.initialize(settings,
-        onDidReceiveNotificationResponse: (response) {
-      if (response.payload == 'cancel_emergency') {
-        cancelEmergency();
-      }
-    });
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (response) {
+        if (response.payload == 'cancel_emergency') {
+          cancelEmergency();
+        }
+      },
+    );
   }
 
-  Future<void> showEmergencyNotification({required VoidCallback onTimeout}) async {
+  Future<void> showEmergencyNotification({
+    required VoidCallback onTimeout,
+  }) async {
     if (_recordingService.isRecording) return;
     _timer?.cancel();
     const androidDetails = AndroidNotificationDetails(
@@ -39,7 +44,10 @@ class NotificationService {
       enableVibration: false,
     );
     const iosDetails = DarwinNotificationDetails(presentSound: false);
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _plugin.show(
       0,
@@ -58,5 +66,27 @@ class NotificationService {
   void cancelEmergency() {
     _timer?.cancel();
     _plugin.cancel(0);
+  }
+Future<void> showLowStorageWarning() async {
+    const androidDetails = AndroidNotificationDetails(
+      'storage_channel',
+      'Storage',
+      channelDescription: 'Storage warnings',
+      playSound: false,
+      importance: Importance.low,
+      priority: Priority.low,
+      enableVibration: false,
+    );
+    const iosDetails = DarwinNotificationDetails(presentSound: false);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+    await _plugin.show(
+      1,
+      'Espacio insuficiente',
+      'No hay espacio para grabar audio',
+      details,
+    );
   }
 }

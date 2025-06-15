@@ -23,12 +23,16 @@ void main() {
   int startCount = 0;
   late MockRecorder recorder;
   late RecordingService service;
+  late double freeSpace;
+
 
   setUp(() {
     recorder = MockRecorder();
+    freeSpace = 10;
     service = RecordingService(
       recorder: recorder,
       duration: const Duration(seconds: 1),
+      freeSpaceProvider: (_) async => freeSpace,
     );
     when(() => recorder.isRecording()).thenAnswer((_) async => false);
     when(() => recorder.hasPermission()).thenAnswer((_) async => true);
@@ -52,6 +56,31 @@ void main() {
       async.flushMicrotasks();
       expect(startCount, 1);
       verify(() => recorder.stop()).called(1);
+    });
+  });
+  test('recording aborts when storage is low', () {
+    fakeAsync((async) {
+      freeSpace = 0.5; // less than required 1MB
+      bool warned = false;
+      service.recordFor30Seconds(
+        onInsufficientStorage: () {
+          warned = true;
+        },
+      );
+      async.flushMicrotasks();
+      expect(startCount, 0);
+      expect(warned, isTrue);
+    });
+  });
+
+  test('recording starts when storage is sufficient', () {
+    fakeAsync((async) {
+      freeSpace = 5;
+      service.recordFor30Seconds();
+      async.flushMicrotasks();
+      async.elapse(const Duration(seconds: 1));
+      async.flushMicrotasks();
+      expect(startCount, 1);
     });
   });
 }

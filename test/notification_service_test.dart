@@ -5,7 +5,8 @@ import 'package:fake_async/fake_async.dart';
 import 'package:bullying/shared/services/notification_service.dart';
 import 'package:bullying/shared/services/recording_service.dart';
 
-class InitializationSettingsFake extends Fake implements InitializationSettings {}
+class InitializationSettingsFake extends Fake
+    implements InitializationSettings {}
 
 class NotificationDetailsFake extends Fake implements NotificationDetails {}
 
@@ -27,10 +28,23 @@ void main() {
     recordingService = MockRecordingService();
     when(() => recordingService.isRecording).thenReturn(false);
     service = NotificationService(recordingService, plugin);
-    when(() => plugin.initialize(any(), onDidReceiveNotificationResponse: any(named: 'onDidReceiveNotificationResponse')))
-        .thenAnswer((_) async {});
-    when(() => plugin.show(any(), any(), any(), any(), payload: any(named: 'payload')))
-        .thenAnswer((_) async {});
+    when(
+      () => plugin.initialize(
+        any(),
+        onDidReceiveNotificationResponse: any(
+          named: 'onDidReceiveNotificationResponse',
+        ),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => plugin.show(
+        any(),
+        any(),
+        any(),
+        any(),
+        payload: any(named: 'payload'),
+      ),
+    ).thenAnswer((_) async {});
     when(() => plugin.cancel(0)).thenAnswer((_) async {});
   });
 
@@ -39,14 +53,18 @@ void main() {
     fakeAsync((async) {
       service.init();
       async.flushMicrotasks();
-      service.showEmergencyNotification(onTimeout: () {
-        triggered = true;
-      });
+      service.showEmergencyNotification(
+        onTimeout: () {
+          triggered = true;
+        },
+      );
       async.flushMicrotasks();
       service.cancelEmergency();
       async.elapse(const Duration(seconds: 6));
       expect(triggered, isFalse);
-      verify(() => plugin.show(0, any(), any(), any(), payload: 'cancel_emergency')).called(1);
+      verify(
+        () => plugin.show(0, any(), any(), any(), payload: 'cancel_emergency'),
+      ).called(1);
       verify(() => plugin.cancel(0)).called(1);
     });
   });
@@ -56,9 +74,11 @@ void main() {
     fakeAsync((async) {
       service.init();
       async.flushMicrotasks();
-      service.showEmergencyNotification(onTimeout: () {
-        triggered = true;
-      });
+      service.showEmergencyNotification(
+        onTimeout: () {
+          triggered = true;
+        },
+      );
       async.flushMicrotasks();
       async.elapse(const Duration(seconds: 6));
       expect(triggered, isTrue);
@@ -73,8 +93,19 @@ void main() {
       service.showEmergencyNotification(onTimeout: () {});
       async.flushMicrotasks();
       async.elapse(const Duration(seconds: 6));
-      verifyNever(() => plugin.show(any(), any(), any(), any(),
-          payload: any(named: 'payload')));
+      verifyNever(
+        () => plugin.show(
+          any(),
+          any(),
+          any(),
+          any(),
+          payload: any(named: 'payload'),
+        ),
+      );
     });
+  });
+test('showLowStorageWarning triggers notification', () async {
+    await service.showLowStorageWarning();
+    verify(() => plugin.show(1, any(), any(), any())).called(1);
   });
 }
