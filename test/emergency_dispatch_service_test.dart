@@ -132,4 +132,62 @@ void main() {
     expect(sent.length, 2); // one from pending and one current
     expect(storage.map['pending'], isNull);
   });
+  test('packages data correctly', () async {
+    SharedPreferences.setMockInitialValues({
+      'userName': 'Alice',
+      'userPhoneNumber': '999',
+    });
+    when(() => contactService.getContacts())
+        .thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    final service = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 5.0, 'longitude': 6.0}),
+      ),
+      connectivity: FakeConnectivity(ConnectivityResult.wifi),
+      sender: (n, m) async => sent.add(m),
+    );
+    await service.dispatch('audio');
+    final message = sent.single;
+    expect(message, contains('Nombre: Alice'));
+    expect(message, contains('Teléfono: 999'));
+    expect(message, contains('Ubicación: 5.0,6.0'));
+    expect(message, contains('Audio: audio'));
+    expect(message, contains('Fecha:'));
+  });
+
+  test('queues offline and sends when back online', () async {
+    SharedPreferences.setMockInitialValues({});
+    when(() => contactService.getContacts())
+        .thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    final offline = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
+      ),
+      connectivity: FakeConnectivity(ConnectivityResult.none),
+      sender: (n, m) async => sent.add('$n:$m'),
+    );
+    await offline.dispatch('path');
+    final stored = jsonDecode(storage.map['pending']!);
+    expect(stored, isA<List>());
+    final item = stored.first as Map<String, dynamic>;
+    expect(item['numbers'], ['1']);
+    expect((item['message'] as String), contains('Audio: path'));
+
+    final online = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
+      ),
+      connectivity: FakeConnectivity(ConnectivityResult.mobile),
+      sender: (n, m) async => sent.add('$n:$m'),
+    );
+    await online.dispatch('path2');
+    expect(sent.length, 2);
+    expect(storage.map['pending'], isNull);
+  });
 }
