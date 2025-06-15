@@ -64,6 +64,7 @@ class EmergencyDispatchService {
         'Ubicación: $locationStr\nAudio: $audioData\nFecha: $now';
 
     final contacts = await contactService.getContacts();
+    final attempts = contacts.length;
 
     final hasConnection =
         await connectivity.checkConnectivity() != ConnectivityResult.none;
@@ -72,10 +73,23 @@ class EmergencyDispatchService {
         await sender(c.phoneNumber, message);
       }
       await _sendPending();
-      await logService.addLog(locationStr, true);
+      await logService.addLog(
+        user: name,
+        phone: phone,
+        location: locationStr,
+        success: true,
+        attempts: attempts,
+      );
     } else {
       await _storePending(contacts.map((c) => c.phoneNumber).toList(), message);
-      await logService.addLog(locationStr, false);
+      await logService.addLog(
+        user: name,
+        phone: phone,
+        location: locationStr,
+        success: false,
+        attempts: attempts,
+        failureCause: 'offline',
+      );
       await notificationService?.showDispatchFailureNotification();
     }
   }

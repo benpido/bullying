@@ -71,7 +71,14 @@ class FakeLocation extends Fake implements Location {
 
 class FakeLogService extends Fake implements LogService {
   @override
-  Future<void> addLog(String location, bool success) async {}
+  Future<void> addLog({
+    required String user,
+    required String phone,
+    required String location,
+    required bool success,
+    required int attempts,
+    String? failureCause,
+  }) async {}
 
   @override
   Future<List<LogEntry>> getLogs() async => [];

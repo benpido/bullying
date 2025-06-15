@@ -12,10 +12,17 @@ class LogService {
   static const _key = 'dispatch_logs';
 
   LogService({FlutterSecureStorage? storage, EncryptionUtil? encryption})
-    : storage = storage ?? const FlutterSecureStorage(),
-      encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
+      : storage = storage ?? const FlutterSecureStorage(),
+        encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
 
-  Future<void> addLog(String location, bool success) async {
+  Future<void> addLog({
+    required String user,
+    required String phone,
+    required String location,
+    required bool success,
+    required int attempts,
+    String? failureCause,
+  }) async {
     final existing = await storage.read(key: _key);
     List<LogEntry> logs = [];
     if (existing != null) {
@@ -27,7 +34,15 @@ class LogService {
           .toList();
     }
     logs.add(
-      LogEntry(timestamp: DateTime.now(), location: location, success: success),
+      LogEntry(
+        timestamp: DateTime.now(),
+        user: user,
+        phone: phone,
+        location: location,
+        success: success,
+        attempts: attempts,
+        failureCause: failureCause,
+      ),
     );
     final jsonStr = jsonEncode(
       logs.map((e) => e.toJson()).toList(growable: false),
