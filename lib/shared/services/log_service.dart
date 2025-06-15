@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import '../constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/log_entry_model.dart';
@@ -13,7 +13,7 @@ class LogService {
 
   LogService({FlutterSecureStorage? storage, EncryptionUtil? encryption})
       : storage = storage ?? const FlutterSecureStorage(),
-        encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
+        encryption = encryption ?? EncryptionUtil(defaultEncryptionKey);
 
   Future<void> addLog({
     required String user,

@@ -1,0 +1,1 @@
+const String defaultEncryptionKey = 'default_secret_key_123456';

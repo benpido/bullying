@@ -10,6 +10,7 @@ import 'contact_service.dart';
 import 'dart:typed_data';
 import 'encryption_util.dart';
 import 'notification_service.dart';
+import '../constants.dart';
 
 typedef MessageSender = Future<void> Function(String number, String message);
 
@@ -38,7 +39,7 @@ class EmergencyDispatchService {
        storage = storage ?? const FlutterSecureStorage(),
        connectivity = connectivity ?? Connectivity(),
        logService = logService ?? LogService(),
-       encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
+       encryption = encryption ?? EncryptionUtil(defaultEncryptionKey);
 
   Future<void> dispatch(String audioData) async {
     final prefs = await SharedPreferences.getInstance();

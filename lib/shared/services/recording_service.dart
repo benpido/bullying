@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'encryption_util.dart';
+import '../constants.dart';
 
 class RecordingService {
   final AudioRecorder _record;
@@ -23,7 +24,7 @@ class RecordingService {
   }) : _record = recorder ?? AudioRecorder(),
        _freeSpaceProvider =
            freeSpaceProvider ?? DiskSpacePlus().getFreeDiskSpaceForPath,
-        _encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
+        _encryption = encryption ?? EncryptionUtil(defaultEncryptionKey);
 
   static const double _requiredMb = 1.0;
 
