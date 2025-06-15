@@ -14,6 +14,7 @@ import 'shared/services/recording_service.dart';
 import 'shared/services/contact_service.dart';
 import 'shared/services/emergency_dispatch_service.dart';
 import 'shared/services/config_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyApp extends StatefulWidget {
   final String initialRoute;

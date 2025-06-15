@@ -37,9 +37,9 @@ class _ContactFormState extends State<ContactForm> {
     final phone1 = _phoneController1.text;
     final phone2 = _phoneController2.text;
 
-  if (!isPhoneValid(phone1) && !isPhoneValid(phone2)) {
+  if (!isPhoneValid(phone1) || !isPhoneValid(phone2)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Se requiere al menos un contacto válido')),
+        const SnackBar(content: Text('Se requieren dos contactos válidos')),
       );
       return;
     }

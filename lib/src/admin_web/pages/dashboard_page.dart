@@ -13,8 +13,9 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
-  int _index = 0;
+class _DashboardPageState extends State<DashboardPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _controller;
   final List<Widget> _pages = const [
     UsersPage(),
     SecurityPage(),
@@ -27,7 +28,17 @@ class _DashboardPageState extends State<DashboardPage> {
     await FirebaseAuth.instance.signOut();
     if (mounted) Navigator.of(context).pushReplacementNamed('/login');
   }
+  @override
+  void initState() {
+    super.initState();
+    _controller = TabController(length: _pages.length, vsync: this);
+  }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,27 +47,20 @@ class _DashboardPageState extends State<DashboardPage> {
         actions: [
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
+        bottom: TabBar(
+          controller: _controller,
+          tabs: const [
+            Tab(icon: Icon(Icons.person), text: 'Users'),
+            Tab(icon: Icon(Icons.security), text: 'Security'),
+            Tab(icon: Icon(Icons.contacts), text: 'Contacts'),
+            Tab(icon: Icon(Icons.history), text: 'Activity'),
+            Tab(icon: Icon(Icons.account_circle), text: 'Profile'),
+          ],
+        ),
       ),
-      body: _pages[_index],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Users'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.security),
-            label: 'Security',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
-            label: 'Contacts',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Activity'),
-           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        ],
+      body: TabBarView(
+        controller: _controller,
+        children: _pages,
       ),
     );
   }

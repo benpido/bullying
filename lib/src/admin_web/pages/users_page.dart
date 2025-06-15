@@ -89,8 +89,12 @@ class _UsersPageState extends State<UsersPage> {
                 itemCount: docs.length,
                 itemBuilder: (c, i) {
                   final d = docs[i];
+                  final email = d['email'] ?? '';
+                  final adminName = d['adminName'] ?? '';
+                  final adminPhone = d['adminPhone'] ?? '';
                   return ListTile(
-                    title: Text(d['email'] ?? ''),
+                    title: Text(email),
+                    subtitle: Text('$adminName ($adminPhone)'),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => _delete(d.id),
