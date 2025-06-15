@@ -9,7 +9,7 @@ import 'encryption_util.dart';
 
 class RecordingService {
   final AudioRecorder _record;
-  final Duration duration;
+  Duration duration;
   final Future<double?> Function(String path) _freeSpaceProvider;
   final EncryptionUtil _encryption;
   bool _isRecording = false;
@@ -23,8 +23,7 @@ class RecordingService {
   }) : _record = recorder ?? AudioRecorder(),
        _freeSpaceProvider =
            freeSpaceProvider ?? DiskSpacePlus().getFreeDiskSpaceForPath,
-       _encryption =
-           encryption ?? EncryptionUtil('default_secret_key_123456');
+        _encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
 
   static const double _requiredMb = 1.0;
 

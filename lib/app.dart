@@ -13,6 +13,7 @@ import 'shared/services/notification_service.dart';
 import 'shared/services/recording_service.dart';
 import 'shared/services/contact_service.dart';
 import 'shared/services/emergency_dispatch_service.dart';
+import 'shared/services/config_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -30,6 +31,7 @@ class _MyAppState extends State<MyApp> {
   late NotificationService _notificationService;
   final RecordingService _recordingService = RecordingService();
   final ContactService _contactService = ContactService();
+  final ConfigService _configService = ConfigService();
   late EmergencyDispatchService _dispatchService;
   bool _requireContacts = false;
 
@@ -38,6 +40,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _dispatchService = EmergencyDispatchService(sender: (n, m) async {});
     _dispatchService.startConnectivityMonitor();
+    _loadConfig();
     _loadThemePreference();
     _loadFacade();
     _checkContacts();
@@ -84,6 +87,13 @@ class _MyAppState extends State<MyApp> {
     setState(() {});
   }
 
+  Future<void> _loadConfig() async {
+    final cfg = await _configService.fetch();
+    final seconds = cfg?['recordingDuration'];
+    if (seconds is int) {
+      _recordingService.duration = Duration(seconds: seconds);
+    }
+  }
 
   void updateTheme(bool isDark) {
     setState(() {
