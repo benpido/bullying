@@ -8,7 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:bullying/shared/services/encryption_util.dart';
 import 'package:bullying/shared/services/emergency_dispatch_service.dart';
 import 'package:bullying/shared/services/contact_service.dart';
 import 'package:bullying/shared/models/contact_model.dart';
@@ -141,6 +141,7 @@ void main() {
 
   test('stores when offline and resends later', () async {
     SharedPreferences.setMockInitialValues({});
+    final util = EncryptionUtil('test_key');
     when(
       () => contactService.getContacts(),
     ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
@@ -152,11 +153,19 @@ void main() {
       ),
       connectivity: FakeConnectivity(ConnectivityResult.none),
       logService: logService,
+      encryption: util,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await offline.dispatch('data');
     expect(sent.isEmpty, isTrue);
     expect(storage.map['pending'], isNotNull);
+    final storedList = jsonDecode(storage.map['pending']!);
+    final item = storedList.first as Map<String, dynamic>;
+    final encMsg = item['message'] as String;
+
+    expect(encMsg.contains('Audio: data'), isFalse);
+    final decMsg = utf8.decode(offline.encryption.decrypt(encMsg));
+    expect(decMsg, contains('Audio: data'));
 
     final online = EmergencyDispatchService(
       contactService: contactService,
@@ -166,10 +175,12 @@ void main() {
       ),
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
       logService: logService,
+      encryption: util,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await online.dispatch('data2');
     expect(sent.length, 2); // one from pending and one current
+    expect(sent.any((s) => s.contains('Audio: data')), isTrue);
     expect(storage.map['pending'], isNull);
   });
   test('packages data correctly', () async {
@@ -228,6 +239,7 @@ void main() {
 
   test('queues offline and sends when back online', () async {
     SharedPreferences.setMockInitialValues({});
+    final util = EncryptionUtil('test_key');
     when(
       () => contactService.getContacts(),
     ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
@@ -239,6 +251,7 @@ void main() {
       ),
       connectivity: FakeConnectivity(ConnectivityResult.none),
       logService: logService,
+      encryption: util,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await offline.dispatch('data');
@@ -246,7 +259,10 @@ void main() {
     expect(stored, isA<List>());
     final item = stored.first as Map<String, dynamic>;
     expect(item['numbers'], ['1']);
-    expect((item['message'] as String), contains('Audio: data'));
+    final encMsg = item['message'] as String;
+    expect(encMsg.contains('Audio: data'), isFalse);
+    final decMsg = utf8.decode(offline.encryption.decrypt(encMsg));
+    expect(decMsg, contains('Audio: data'));
 
     final online = EmergencyDispatchService(
       contactService: contactService,
@@ -256,13 +272,15 @@ void main() {
       ),
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
       logService: logService,
+      encryption: util,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await online.dispatch('data2');
     expect(sent.length, 2);
+    expect(sent.any((s) => s.contains('Audio: data')), isTrue);
     expect(storage.map['pending'], isNull);
   });
-test('log records success', () async {
+  test('log records success', () async {
     SharedPreferences.setMockInitialValues({});
     when(
       () => contactService.getContacts(),

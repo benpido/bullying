@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import '../models/contact_model.dart';
 import 'contact_service.dart';
+import 'dart:typed_data';
+import 'encryption_util.dart';
 
 typedef MessageSender = Future<void> Function(String number, String message);
 
@@ -17,6 +19,7 @@ class EmergencyDispatchService {
   final MessageSender sender;
   final Connectivity connectivity;
   final LogService logService;
+  final EncryptionUtil encryption;
   StreamSubscription<ConnectivityResult>? _subscription;
 
   EmergencyDispatchService({
@@ -25,12 +28,14 @@ class EmergencyDispatchService {
     FlutterSecureStorage? storage,
     Connectivity? connectivity,
     LogService? logService,
+    EncryptionUtil? encryption,
     required this.sender,
   }) : contactService = contactService ?? ContactService(),
        location = location ?? Location(),
        storage = storage ?? const FlutterSecureStorage(),
        connectivity = connectivity ?? Connectivity(),
-       logService = logService ?? LogService();
+       logService = logService ?? LogService(),
+       encryption = encryption ?? EncryptionUtil('default_secret_key_123456');
 
   Future<void> dispatch(String audioData) async {
     final prefs = await SharedPreferences.getInstance();
@@ -69,7 +74,8 @@ class EmergencyDispatchService {
     final List<dynamic> list = existing == null
         ? []
         : jsonDecode(existing) as List<dynamic>;
-    list.add({'numbers': numbers, 'message': message});
+    final enc = encryption.encrypt(Uint8List.fromList(utf8.encode(message)));
+    list.add({'numbers': numbers, 'message': enc});
     await storage.write(key: 'pending', value: jsonEncode(list));
   }
 
@@ -78,7 +84,9 @@ class EmergencyDispatchService {
     if (pendingStr == null) return;
     final List<dynamic> list = jsonDecode(pendingStr) as List<dynamic>;
     for (final item in list) {
-      final message = item['message'] as String;
+      final encMsg = item['message'] as String;
+      final bytes = encryption.decrypt(encMsg);
+      final message = utf8.decode(bytes);
       final numbers = List<String>.from(item['numbers'] as List);
       for (final n in numbers) {
         await sender(n, message);
