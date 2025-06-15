@@ -15,6 +15,12 @@ class _UsersPageState extends State<UsersPage> {
 
   Future<void> _createUser() async {
     try {
+      final adminId = FirebaseAuth.instance.currentUser!.uid;
+      final adminDoc = await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(adminId)
+          .get();
+      final adminData = adminDoc.data();
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _email.text,
         password: _password.text,
@@ -22,7 +28,12 @@ class _UsersPageState extends State<UsersPage> {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(cred.user!.uid)
-          .set({'email': _email.text});
+          .set({
+        'email': _email.text,
+        'adminId': adminId,
+        'adminName': adminData?['name'],
+        'adminPhone': adminData?['phone'],
+      });
       _email.clear();
       _password.clear();
     } catch (e) {
