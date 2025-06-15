@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/models/contact_model.dart';
 import '../../../shared/services/contact_service.dart';
+import '../../../shared/utils/validators.dart';
 
 class ContactForm extends StatefulWidget {
   final ContactService contactService;
@@ -33,14 +34,26 @@ class _ContactFormState extends State<ContactForm> {
 
   // Salvar os contatos no SharedPreferences
   void _saveContacts() async {
+    final phone1 = _phoneController1.text;
+    final phone2 = _phoneController2.text;
+
+    if (!isPhoneValid(phone1) || !isPhoneValid(phone2)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+        const SnackBar(content: Text('Número de teléfono inválido')),
+      );
+      return;
+    }
+
     final contact1 = ContactModel(
       name: _nameController1.text,
-      phoneNumber: _phoneController1.text,
+      phoneNumber: phone1,
     );
 
     final contact2 = ContactModel(
       name: _nameController2.text,
-      phoneNumber: _phoneController2.text,
+      phoneNumber: phone2,
     );
 
     await widget.contactService.setContacts([contact1, contact2]);
