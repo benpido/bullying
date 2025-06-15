@@ -25,11 +25,21 @@ class ConfigScreenState extends State<ConfigScreen> {
   late bool _isDarkModeEnabled;
   final ContactService contactService = ContactService();
   final FacadeService facadeService = FacadeService();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _isDarkModeEnabled = widget.isDarkModeEnabled;
+    _loadUserInfo();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
   }
 
   Future<void> _saveThemePreference(bool value) async {
@@ -44,6 +54,23 @@ class ConfigScreenState extends State<ConfigScreen> {
     _saveThemePreference(value);
     widget.onThemeChanged(value); // Atualiza o tema no MyApp
   }
+
+  Future<void> _loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    _nameController.text = prefs.getString('userName') ?? '';
+    _phoneController.text = prefs.getString('userPhoneNumber') ?? '';
+  }
+
+  Future<void> _saveUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userName', _nameController.text);
+    await prefs.setString('userPhoneNumber', _phoneController.text);
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Datos guardados')));
+    }
+  }
+
 
   Widget _buildFacadeCarousel() {
     final facades = [
@@ -66,7 +93,7 @@ class ConfigScreenState extends State<ConfigScreen> {
     ];
 
     return SizedBox(
-      height: 80,
+      height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: facades.length,
@@ -138,6 +165,23 @@ class ConfigScreenState extends State<ConfigScreen> {
             const Text('Seleccionar Fachada:', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
             _buildFacadeCarousel(),
+            const SizedBox(height: 20),
+
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Nombre'),
+            ),
+            TextField(
+              controller: _phoneController,
+              decoration:
+                  const InputDecoration(labelText: 'Teléfono del dispositivo'),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _saveUserInfo,
+              child: const Text('Guardar Datos'),
+            ),
             const SizedBox(height: 20),
 
             ContactForm(
