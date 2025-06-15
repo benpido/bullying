@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:async';
 import '../models/contact_model.dart';
 import 'contact_service.dart';
 
@@ -16,6 +16,7 @@ class EmergencyDispatchService {
   final FlutterSecureStorage storage;
   final MessageSender sender;
   final Connectivity connectivity;
+  StreamSubscription<ConnectivityResult>? _subscription;
 
   EmergencyDispatchService({
     ContactService? contactService,
@@ -79,5 +80,23 @@ class EmergencyDispatchService {
       }
     }
     await storage.delete(key: 'pending');
+  }
+
+  void startConnectivityMonitor() {
+    _subscription?.cancel();
+    _subscription = connectivity.onConnectivityChanged.listen((result) {
+      if (result != ConnectivityResult.none) {
+        _sendPending();
+      }
+    });
+    connectivity.checkConnectivity().then((result) {
+      if (result != ConnectivityResult.none) {
+        _sendPending();
+      }
+    });
+  }
+
+  void dispose() {
+    _subscription?.cancel();
   }
 }

@@ -12,6 +12,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/recording_service.dart';
 import 'shared/services/contact_service.dart';
+import 'shared/services/emergency_dispatch_service.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -29,11 +30,14 @@ class _MyAppState extends State<MyApp> {
   late NotificationService _notificationService;
   final RecordingService _recordingService = RecordingService();
   final ContactService _contactService = ContactService();
+  late EmergencyDispatchService _dispatchService;
   bool _requireContacts = false;
 
   @override
   void initState() {
     super.initState();
+    _dispatchService = EmergencyDispatchService(sender: (n, m) async {});
+    _dispatchService.startConnectivityMonitor();
     _loadThemePreference();
     _loadFacade();
     _checkContacts();
@@ -102,6 +106,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     _shakeService.dispose();
     _noiseService.dispose();
+    _dispatchService.dispose();
     _notificationService.cancelEmergency();
     super.dispose();
   }
@@ -120,7 +125,7 @@ class _MyAppState extends State<MyApp> {
         final routes = Map<String, WidgetBuilder>.from(AppRoutes.routes);
         routes[AppRoutes.home] = (_) => HomeScreen(noiseService: _noiseService);
         routes[AppRoutes.config] = (context) => ConfigScreen(
-              isDarkModeEnabled: _isDarkModeEnabled,
+          isDarkModeEnabled: _isDarkModeEnabled,
           onThemeChanged: updateTheme,
           onContactsSaved: _onContactsSaved,
         );

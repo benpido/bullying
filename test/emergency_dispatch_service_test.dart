@@ -62,6 +62,26 @@ class FakeConnectivity extends Fake implements Connectivity {
   Future<ConnectivityResult> checkConnectivity() async => result;
 }
 
+class StreamConnectivity extends Fake implements Connectivity {
+  ConnectivityResult result;
+  final StreamController<ConnectivityResult> controller =
+      StreamController<ConnectivityResult>.broadcast();
+  StreamConnectivity(this.result);
+  @override
+  Future<ConnectivityResult> checkConnectivity() async => result;
+
+  @override
+  Stream<ConnectivityResult> get onConnectivityChanged => controller.stream;
+
+  void emit(ConnectivityResult r) {
+    result = r;
+    controller.add(r);
+  }
+
+  Future<void> dispose() async => controller.close();
+}
+
+
 class FakeLocation extends Fake implements Location {
   LocationData data;
   FakeLocation(this.data);
@@ -137,8 +157,9 @@ void main() {
       'userName': 'Alice',
       'userPhoneNumber': '999',
     });
-    when(() => contactService.getContacts())
-        .thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    when(
+      () => contactService.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
     final service = EmergencyDispatchService(
       contactService: contactService,
       storage: storage,
@@ -157,10 +178,37 @@ void main() {
     expect(message, contains('Fecha:'));
   });
 
+  test('pending messages sent when connectivity changes', () async {
+    SharedPreferences.setMockInitialValues({});
+    when(
+      () => contactService.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    final connectivity = StreamConnectivity(ConnectivityResult.none);
+    final service = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
+      ),
+      connectivity: connectivity,
+      sender: (n, m) async => sent.add('$n:$m'),
+    );
+    service.startConnectivityMonitor();
+    await service.dispatch('path');
+    expect(sent.isEmpty, isTrue);
+    connectivity.emit(ConnectivityResult.mobile);
+    await Future.delayed(Duration.zero);
+    expect(sent.length, 1);
+    expect(storage.map['pending'], isNull);
+    await connectivity.dispose();
+  });
+
+
   test('queues offline and sends when back online', () async {
     SharedPreferences.setMockInitialValues({});
-    when(() => contactService.getContacts())
-        .thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    when(
+      () => contactService.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
     final offline = EmergencyDispatchService(
       contactService: contactService,
       storage: storage,
