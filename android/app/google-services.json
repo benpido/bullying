@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "337818312485",
+    "project_id": "bullying-88362",
+    "storage_bucket": "bullying-88362.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:337818312485:android:0073f50a1b6b23cd1884cc",
+        "android_client_info": {
+          "package_name": "com.example.bullying"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "337818312485-eg7es23oubiblthm8ou5i1qqecjujvrl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAh6vfIDT06_H_b9WHUHWF1NhK2xxscQEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "337818312485-eg7es23oubiblthm8ou5i1qqecjujvrl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,30 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bullying-88362",
+          "appId": "1:337818312485:android:0073f50a1b6b23cd1884cc",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bullying-88362",
+          "configurations": {
+            "android": "1:337818312485:android:0073f50a1b6b23cd1884cc",
+            "web": "1:337818312485:web:4feb1446f3bd89241884cc"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
