@@ -16,7 +16,8 @@ import 'shared/services/emergency_dispatch_service.dart';
 import 'shared/services/config_service.dart';
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -43,7 +44,7 @@ class _MyAppState extends State<MyApp> {
     _loadConfig();
     _loadThemePreference();
     _loadFacade();
-    _checkContacts();
+    _checkSetup();
     _notificationService = NotificationService(_recordingService);
     _notificationService.init();
     _shakeService = ShakeService(
@@ -72,12 +73,14 @@ class _MyAppState extends State<MyApp> {
       _isDarkModeEnabled = prefs.getBool('isDarkModeEnabled') ?? false;
     });
   }
-    Future<void> _checkContacts() async {
-      final contacts = await _contactService.getContacts();
-      if (contacts.isEmpty) {
-        _requireContacts = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
+  Future<void> _checkSetup() async {
+    final contacts = await _contactService.getContacts();
+    final prefs = await SharedPreferences.getInstance();
+    final pin = prefs.getString('configPin');
+    if (contacts.length < 2 || pin == null || pin.isEmpty) {
+      _requireContacts = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
       });
     }
   }
@@ -132,7 +135,7 @@ class _MyAppState extends State<MyApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _isDarkModeEnabled ? ThemeMode.dark : ThemeMode.light,
-      initialRoute: AppRoutes.splash,
+      initialRoute: widget.initialRoute,
       routes: () {
         final routes = Map<String, WidgetBuilder>.from(AppRoutes.routes);
         routes[AppRoutes.home] = (_) => HomeScreen(noiseService: _noiseService);

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../modules/splash/splash_screen.dart';
 import '../../modules/emergency/emergency_screen.dart';
 import '../../modules/auth/lock_screen.dart';
+import '../../modules/auth/login_screen.dart';
 
-// Fachadas (máscaras)
 import '../../modules/facades/calendar_screen.dart';
 import '../../modules/facades/calculator_screen.dart';
 import '../../modules/facades/notes_screen.dart';
@@ -12,6 +12,7 @@ import '../../modules/facades/notes_screen.dart';
 class AppRoutes {
   static const String splash = '/splash';
   static const String home = '/home';
+  static const String login = '/login';
   static const String emergency = '/emergency';
   static const String config = '/config';
   static const String lock = '/lock';
@@ -25,6 +26,7 @@ class AppRoutes {
 
   static final Map<String, WidgetBuilder> routes = {
     splash: (_) => const SplashScreen(),
+    login: (_) => const LoginScreen(),
     
     emergency: (_) => const EmergencyScreen(),
     //config: (_) => ConfigScreen(),

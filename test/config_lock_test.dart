@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bullying/core/routes/app_routes.dart';
 import 'package:bullying/modules/auth/lock_screen.dart';
 import 'package:bullying/modules/auth/widgets/lock_input.dart';
@@ -10,6 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('failing unlock keeps screen blocked', (tester) async {
+    SharedPreferences.setMockInitialValues({'configPin': '1234'});
     await tester.pumpWidget(MaterialApp(
       initialRoute: '/',
       routes: {

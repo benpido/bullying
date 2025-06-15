@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LockInput extends StatefulWidget {
   final VoidCallback onUnlock;
@@ -10,7 +11,7 @@ class LockInput extends StatefulWidget {
 }
 
 class _LockInputState extends State<LockInput> with TickerProviderStateMixin {
-  final String _storedPassword = '1234'; // Senha simulada
+  String _storedPassword = '1234';
   String _inputPassword = ''; // Armazenar a senha digitada
   bool _isIncorrectPassword = false;
   late AnimationController _animationController;
@@ -18,10 +19,18 @@ class _LockInputState extends State<LockInput> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _loadPassword();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+  }
+
+    Future<void> _loadPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _storedPassword = prefs.getString('configPin') ?? '1234';
+    });
   }
 
   void _checkPassword() {

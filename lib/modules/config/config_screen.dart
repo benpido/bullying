@@ -27,6 +27,7 @@ class ConfigScreenState extends State<ConfigScreen> {
   final FacadeService facadeService = FacadeService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class ConfigScreenState extends State<ConfigScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
@@ -59,12 +61,16 @@ class ConfigScreenState extends State<ConfigScreen> {
     final prefs = await SharedPreferences.getInstance();
     _nameController.text = prefs.getString('userName') ?? '';
     _phoneController.text = prefs.getString('userPhoneNumber') ?? '';
+    _pinController.text = prefs.getString('configPin') ?? '';
   }
 
   Future<void> _saveUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', _nameController.text);
     await prefs.setString('userPhoneNumber', _phoneController.text);
+    if (_pinController.text.isNotEmpty) {
+      await prefs.setString('configPin', _pinController.text);
+    }
     if (mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Datos guardados')));
@@ -176,6 +182,12 @@ class ConfigScreenState extends State<ConfigScreen> {
               decoration:
                   const InputDecoration(labelText: 'Teléfono del dispositivo'),
               keyboardType: TextInputType.phone,
+            ),
+            TextField(
+              controller: _pinController,
+              decoration: const InputDecoration(labelText: 'PIN de Configuración'),
+              obscureText: true,
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 10),
             ElevatedButton(
