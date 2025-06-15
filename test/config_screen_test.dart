@@ -3,86 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:location/location.dart';
-import 'package:bullying/shared/services/log_service.dart';
-import 'package:bullying/shared/models/log_entry_model.dart';
 import 'package:bullying/modules/config/config_screen.dart';
 import 'package:bullying/shared/services/emergency_dispatch_service.dart';
 import 'package:bullying/shared/services/contact_service.dart';
 import 'package:bullying/shared/models/contact_model.dart';
+import 'test_helpers.dart';
 
 class MockContactService extends Mock implements ContactService {}
-
-class FakeStorage extends Fake implements FlutterSecureStorage {
-  final Map<String, String?> map = {};
-  @override
-  Future<String?> read({
-    required String key,
-    IOSOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    MacOsOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async => map[key];
-
-  @override
-  Future<void> write({
-    required String key,
-    required String? value,
-    IOSOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    MacOsOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async {
-    map[key] = value;
-  }
-
-  @override
-  Future<void> delete({
-    required String key,
-    IOSOptions? iOptions,
-    AndroidOptions? aOptions,
-    LinuxOptions? lOptions,
-    WebOptions? webOptions,
-    MacOsOptions? mOptions,
-    WindowsOptions? wOptions,
-  }) async {
-    map.remove(key);
-  }
-}
-
-class FakeConnectivity extends Fake implements Connectivity {
-  ConnectivityResult result;
-  FakeConnectivity(this.result);
-  @override
-  Future<ConnectivityResult> checkConnectivity() async => result;
-}
-
-class FakeLocation extends Fake implements Location {
-  LocationData data;
-  FakeLocation(this.data);
-  @override
-  Future<LocationData> getLocation() async => data;
-}
-
-class FakeLogService extends Fake implements LogService {
-  @override
-  Future<void> addLog({
-    required String user,
-    required String phone,
-    required String location,
-    required bool success,
-    required int attempts,
-    String? failureCause,
-  }) async {}
-
-  @override
-  Future<List<LogEntry>> getLogs() async => [];
-}
 
 void main() {
   final binding =
