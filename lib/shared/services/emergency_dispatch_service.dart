@@ -47,8 +47,15 @@ class EmergencyDispatchService {
 
     String locationStr = 'NO DISPONIBLE';
     try {
-      final locData = await location.getLocation();
-      locationStr = '${locData.latitude},${locData.longitude}';
+      var permission = await location.hasPermission();
+      if (permission == PermissionStatus.denied) {
+        permission = await location.requestPermission();
+      }
+      if (permission == PermissionStatus.granted ||
+          permission == PermissionStatus.grantedLimited) {
+        final locData = await location.getLocation();
+        locationStr = '${locData.latitude},${locData.longitude}';
+      }
     } catch (_) {}
 
     final now = DateTime.now().toIso8601String();

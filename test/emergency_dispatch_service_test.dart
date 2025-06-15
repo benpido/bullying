@@ -89,6 +89,11 @@ class FakeLocation extends Fake implements Location {
   FakeLocation(this.data);
   @override
   Future<LocationData> getLocation() async => data;
+  @override
+  Future<PermissionStatus> hasPermission() async => PermissionStatus.granted;
+  @override
+  Future<PermissionStatus> requestPermission() async =>
+      PermissionStatus.granted;
 }
 
 class FakeLogService extends Fake implements LogService {
