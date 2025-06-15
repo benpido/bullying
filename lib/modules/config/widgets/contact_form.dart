@@ -37,16 +37,23 @@ class _ContactFormState extends State<ContactForm> {
     final phone1 = _phoneController1.text;
     final phone2 = _phoneController2.text;
 
-  if (!isPhoneValid(phone1) || !isPhoneValid(phone2)) {
+  if (!isPhoneValid(phone1) && !isPhoneValid(phone2)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Se requieren dos contactos válidos')),
+        const SnackBar(content: Text('Se requiere al menos un contacto válido')),
       );
       return;
     }
-  final contacts = [
-      ContactModel(name: _nameController1.text, phoneNumber: phone1),
-      ContactModel(name: _nameController2.text, phoneNumber: phone2),
-    ];
+    final contacts = <ContactModel>[];
+    if (isPhoneValid(phone1)) {
+      contacts.add(
+        ContactModel(name: _nameController1.text, phoneNumber: phone1),
+      );
+    }
+    if (isPhoneValid(phone2)) {
+      contacts.add(
+        ContactModel(name: _nameController2.text, phoneNumber: phone2),
+      );
+    }
 
     await widget.contactService.setContacts(contacts);
 

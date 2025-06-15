@@ -26,12 +26,20 @@ class _LockInputState extends State<LockInput> with TickerProviderStateMixin {
     );
   }
 
-    Future<void> _loadPassword() async {
+  Future<void> _loadPassword() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _storedPassword = prefs.getString('configPin') ?? '1234';
     });
   }
+
+@override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
 
   void _checkPassword() {
     if (_inputPassword == _storedPassword) {

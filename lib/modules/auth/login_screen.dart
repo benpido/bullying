@@ -4,6 +4,7 @@ import '../../core/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/services/contact_service.dart';
 import '../../shared/models/contact_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,9 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _email.text,
         password: _password.text,
       );
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.splash);
-      }
 
       final uid = cred.user!.uid;
       final doc = await FirebaseFirestore.instance
@@ -61,6 +59,15 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       await _updateAdminContact(data);
+      final contacts = await _contactService.getContacts();
+      final prefs = await SharedPreferences.getInstance();
+      final pin = prefs.getString('configPin');
+      if (!mounted) return;
+      if (contacts.isEmpty || pin == null || pin.isEmpty) {
+        Navigator.pushReplacementNamed(context, AppRoutes.config);
+      } else {
+        Navigator.pushReplacementNamed(context, AppRoutes.splash);
+      }
     } catch (e) {
       setState(() => _error = e.toString());
     }

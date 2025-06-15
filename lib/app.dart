@@ -74,10 +74,11 @@ class _MyAppState extends State<MyApp> {
     });
   }
   Future<void> _checkSetup() async {
+    if (FirebaseAuth.instance.currentUser == null) return;
     final contacts = await _contactService.getContacts();
     final prefs = await SharedPreferences.getInstance();
     final pin = prefs.getString('configPin');
-    if (contacts.length < 2 || pin == null || pin.isEmpty) {
+    if (contacts.length < 1 || pin == null || pin.isEmpty) {
       _requireContacts = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config);
