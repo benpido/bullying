@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:disk_space/disk_space.dart';
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:typed_data';
@@ -22,7 +22,7 @@ class RecordingService {
     EncryptionUtil? encryption,
   }) : _record = recorder ?? AudioRecorder(),
        _freeSpaceProvider =
-           freeSpaceProvider ?? DiskSpace.getFreeDiskSpaceForPath,
+           freeSpaceProvider ?? DiskSpacePlus().getFreeDiskSpaceForPath,
        _encryption =
            encryption ?? EncryptionUtil('default_secret_key_123456');
 

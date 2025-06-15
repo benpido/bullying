@@ -45,7 +45,7 @@ dependencies:
   location: ^5.0.3
   connectivity_plus: ^5.0.2
   flutter_secure_storage: ^9.0.0
-  disk_space: ^0.2.1
+  disk_space_plus: ^0.2.6
   encrypt: ^5.0.1
   flutter_localizations:
     sdk: flutter
