@@ -54,14 +54,14 @@ class _EmergencyScreenState extends State<EmergencyScreen>
 
   Future<void> _triggerEmergency() async {
     final recorder = RecordingService();
-    final path = await recorder.recordFor30Seconds();
-    if (path != null) {
+    final data = await recorder.recordFor30Seconds();
+    if (data != null) {
       final dispatch = EmergencyDispatchService(
         sender: (number, msg) async {
           // Placeholder sender; in production replace with SMS implementation
         },
       );
-      await dispatch.dispatch(path);
+      await dispatch.dispatch(data);
     }
     Navigator.pushReplacement(
       context,

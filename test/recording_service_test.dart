@@ -4,6 +4,9 @@ import 'package:record/record.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:bullying/shared/services/recording_service.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:bullying/shared/services/encryption_util.dart';
 
 class RecordConfigFake extends Fake implements RecordConfig {}
 
@@ -37,11 +40,13 @@ void main() {
     when(() => recorder.isRecording()).thenAnswer((_) async => false);
     when(() => recorder.hasPermission()).thenAnswer((_) async => true);
     startCount = 0;
-    when(() => recorder.start(any(), path: any(named: 'path'))).thenAnswer((
-      _,
-    ) async {
-      startCount++;
-    });
+    when(() => recorder.start(any(), path: any(named: 'path'))).thenAnswer(
+      (invocation) async {
+        startCount++;
+        final path = invocation.namedArguments[#path] as String;
+        File(path).writeAsBytesSync([1, 2, 3]);
+      },
+    );
     when(() => recorder.stop()).thenAnswer((_) async {});
   });
 
@@ -82,5 +87,12 @@ void main() {
       async.flushMicrotasks();
       expect(startCount, 1);
     });
+  });
+  test('encryption round trip works', () {
+    final util = EncryptionUtil('test_key');
+    final data = Uint8List.fromList([1, 2, 3]);
+    final enc = util.encrypt(data);
+    final dec = util.decrypt(enc);
+    expect(dec, data);
   });
 }

@@ -29,7 +29,7 @@ class EmergencyDispatchService {
        storage = storage ?? const FlutterSecureStorage(),
        connectivity = connectivity ?? Connectivity();
 
-  Future<void> dispatch(String audioPath) async {
+  Future<void> dispatch(String audioData) async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('userName') ?? 'NO DISPONIBLE';
     final phone = prefs.getString('userPhoneNumber') ?? 'NO DISPONIBLE';
@@ -43,7 +43,7 @@ class EmergencyDispatchService {
     final now = DateTime.now().toIso8601String();
     final message =
         'Nombre: $name\nTeléfono: $phone\n'
-        'Ubicación: $locationStr\nAudio: $audioPath\nFecha: $now';
+        'Ubicación: $locationStr\nAudio: $audioData\nFecha: $now';
 
     final contacts = await contactService.getContacts();
 

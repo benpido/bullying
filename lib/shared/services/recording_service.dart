@@ -3,11 +3,15 @@ import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:disk_space/disk_space.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'encryption_util.dart';
 
 class RecordingService {
   final AudioRecorder _record;
   final Duration duration;
   final Future<double?> Function(String path) _freeSpaceProvider;
+  final EncryptionUtil _encryption;
   bool _isRecording = false;
   bool get isRecording => _isRecording;
 
@@ -15,9 +19,12 @@ class RecordingService {
     AudioRecorder? recorder,
     this.duration = const Duration(seconds: 30),
     Future<double?> Function(String path)? freeSpaceProvider,
+    EncryptionUtil? encryption,
   }) : _record = recorder ?? AudioRecorder(),
        _freeSpaceProvider =
-           freeSpaceProvider ?? DiskSpace.getFreeDiskSpaceForPath;
+           freeSpaceProvider ?? DiskSpace.getFreeDiskSpaceForPath,
+       _encryption =
+           encryption ?? EncryptionUtil('default_secret_key_123456');
 
   static const double _requiredMb = 1.0;
 
@@ -51,6 +58,8 @@ class RecordingService {
       await _record.stop();
     }
     _isRecording = false;
-    return path;
+    final bytes = await File(path).readAsBytes();
+    await File(path).delete();
+    return _encryption.encrypt(bytes);
   }
 }

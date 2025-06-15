@@ -116,7 +116,7 @@ void main() {
       connectivity: FakeConnectivity(ConnectivityResult.wifi),
       sender: (n, m) async => sent.add('$n:$m'),
     );
-    await service.dispatch('path');
+    await service.dispatch('data');
     expect(sent.length, 1);
     expect(storage.map.isEmpty, isTrue);
   });
@@ -135,7 +135,7 @@ void main() {
       connectivity: FakeConnectivity(ConnectivityResult.none),
       sender: (n, m) async => sent.add('$n:$m'),
     );
-    await offline.dispatch('path');
+    await offline.dispatch('data');
     expect(sent.isEmpty, isTrue);
     expect(storage.map['pending'], isNotNull);
 
@@ -148,7 +148,7 @@ void main() {
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
       sender: (n, m) async => sent.add('$n:$m'),
     );
-    await online.dispatch('path2');
+    await online.dispatch('data2');
     expect(sent.length, 2); // one from pending and one current
     expect(storage.map['pending'], isNull);
   });
@@ -194,7 +194,7 @@ void main() {
       sender: (n, m) async => sent.add('$n:$m'),
     );
     service.startConnectivityMonitor();
-    await service.dispatch('path');
+    await service.dispatch('data');
     expect(sent.isEmpty, isTrue);
     connectivity.emit(ConnectivityResult.mobile);
     await Future.delayed(Duration.zero);
@@ -218,12 +218,12 @@ void main() {
       connectivity: FakeConnectivity(ConnectivityResult.none),
       sender: (n, m) async => sent.add('$n:$m'),
     );
-    await offline.dispatch('path');
+    await offline.dispatch('data');
     final stored = jsonDecode(storage.map['pending']!);
     expect(stored, isA<List>());
     final item = stored.first as Map<String, dynamic>;
     expect(item['numbers'], ['1']);
-    expect((item['message'] as String), contains('Audio: path'));
+    expect((item['message'] as String), contains('Audio: data'));
 
     final online = EmergencyDispatchService(
       contactService: contactService,
@@ -234,7 +234,7 @@ void main() {
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
       sender: (n, m) async => sent.add('$n:$m'),
     );
-    await online.dispatch('path2');
+    await online.dispatch('data2');
     expect(sent.length, 2);
     expect(storage.map['pending'], isNull);
   });
