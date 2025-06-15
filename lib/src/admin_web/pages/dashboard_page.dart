@@ -4,6 +4,7 @@ import 'users_page.dart';
 import 'security_page.dart';
 import 'contacts_page.dart';
 import 'activity_page.dart';
+import 'admin_profile_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -19,6 +20,7 @@ class _DashboardPageState extends State<DashboardPage> {
     SecurityPage(),
     ContactsPage(),
     ActivityPage(),
+    AdminProfilePage(),
   ];
 
   void _logout() async {
@@ -50,6 +52,10 @@ class _DashboardPageState extends State<DashboardPage> {
             label: 'Contacts',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Activity'),
+           BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
+          ),
         ],
       ),
     );
