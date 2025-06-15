@@ -26,11 +26,16 @@ void main() {
 
   setUp(() {
     recorder = MockRecorder();
-    service = RecordingService(recorder: recorder, duration: const Duration(seconds: 1));
+    service = RecordingService(
+      recorder: recorder,
+      duration: const Duration(seconds: 1),
+    );
     when(() => recorder.isRecording()).thenAnswer((_) async => false);
     when(() => recorder.hasPermission()).thenAnswer((_) async => true);
     startCount = 0;
-    when(() => recorder.start(any(), path: any(named: 'path'))).thenAnswer((_) async {
+    when(() => recorder.start(any(), path: any(named: 'path'))).thenAnswer((
+      _,
+    ) async {
       startCount++;
     });
     when(() => recorder.stop()).thenAnswer((_) async {});

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import './widgets/emergency_confirm.dart';
 import '../../shared/services/recording_service.dart';
+import '../../shared/services/emergency_dispatch_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -51,9 +52,17 @@ class _EmergencyScreenState extends State<EmergencyScreen>
     });
   }
 
-  void _triggerEmergency() {
+  Future<void> _triggerEmergency() async {
     final recorder = RecordingService();
-    recorder.recordFor30Seconds();
+    final path = await recorder.recordFor30Seconds();
+    if (path != null) {
+      final dispatch = EmergencyDispatchService(
+        sender: (number, msg) async {
+          // Placeholder sender; in production replace with SMS implementation
+        },
+      );
+      await dispatch.dispatch(path);
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const EmergencyConfirmedScreen()),
@@ -109,10 +118,9 @@ class _EmergencyScreenState extends State<EmergencyScreen>
                     style: TextStyle(
                       fontSize: 120,
                       fontWeight: FontWeight.bold,
-                      color:
-                          _secondsRemaining > 5
-                              ? Colors.greenAccent
-                              : Colors.redAccent,
+                      color: _secondsRemaining > 5
+                          ? Colors.greenAccent
+                          : Colors.redAccent,
                       shadows: [
                         Shadow(
                           offset: Offset(2, 2),
@@ -129,10 +137,9 @@ class _EmergencyScreenState extends State<EmergencyScreen>
             ElevatedButton(
               onPressed: _cancelTimer,
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _secondsRemaining > 5
-                        ? Colors.greenAccent
-                        : Colors.redAccent,
+                backgroundColor: _secondsRemaining > 5
+                    ? Colors.greenAccent
+                    : Colors.redAccent,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 60,
                   vertical: 18,

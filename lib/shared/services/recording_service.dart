@@ -8,15 +8,18 @@ class RecordingService {
   bool _isRecording = false;
   bool get isRecording => _isRecording;
 
-  RecordingService({AudioRecorder? recorder, this.duration = const Duration(seconds: 30)})
-      : _record = recorder ?? AudioRecorder();
+  RecordingService({
+    AudioRecorder? recorder,
+    this.duration = const Duration(seconds: 30),
+  }) : _record = recorder ?? AudioRecorder();
 
-  Future<void> recordFor30Seconds() async {
-    if (_isRecording || await _record.isRecording()) return;
-    if (!await _record.hasPermission()) return;
+  Future<String?> recordFor30Seconds() async {
+    if (await _record.isRecording()) return null;
+    if (!await _record.hasPermission()) return null;
 
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/emergency_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final path =
+        '${dir.path}/emergency_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
     await _record.start(
       path: path,
@@ -33,5 +36,6 @@ class RecordingService {
       await _record.stop();
     }
     _isRecording = false;
+    return path;
   }
 }
