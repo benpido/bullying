@@ -9,7 +9,12 @@ class NotesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
             appBar: AppBar(
-        title: const Text('Notas'),
+        title: GestureDetector(
+          onLongPress: () {
+            Navigator.pushNamed(context, AppRoutes.emergency);
+          },
+          child: const Text('Notas'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
