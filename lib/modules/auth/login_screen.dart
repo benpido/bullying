@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../shared/services/contact_service.dart';
+import '../../shared/models/contact_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +16,25 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   String? _error;
+  final ContactService _contactService = ContactService();
+
+  Future<void> _updateAdminContact(Map<String, dynamic>? data) async {
+    final adminName = data?['adminName'];
+    final adminPhone = data?['adminPhone'];
+    if (adminName is String && adminPhone is String) {
+      final contacts = await _contactService.getContacts();
+      final adminContact =
+          ContactModel(name: adminName, phoneNumber: adminPhone);
+      final index =
+          contacts.indexWhere((c) => c.phoneNumber == adminPhone);
+      if (index >= 0) {
+        contacts[index] = adminContact;
+      } else {
+        contacts.add(adminContact);
+      }
+      await _contactService.setContacts(contacts);
+    }
+  }
 
   Future<void> _login() async {
     setState(() => _error = null);
@@ -39,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _error = 'Cuenta deshabilitada');
         return;
       }
+      await _updateAdminContact(data);
     } catch (e) {
       setState(() => _error = e.toString());
     }
