@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    section { margin-bottom: 2em; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 4px; }
+  </style>
+</head>
+<body>
+<h1>Web Admin</h1>
+<section id="users">
+  <h2>Users</h2>
+  <form id="user-form">
+    <input type="hidden" id="user-id" />
+    <input type="text" id="user-name" placeholder="Name" required />
+    <input type="text" id="user-phone" placeholder="Phone" required />
+    <button type="submit">Save</button>
+  </form>
+  <table id="user-table"></table>
+</section>
+<section id="events">
+  <h2>Emergency Events</h2>
+  <table id="event-table"></table>
+</section>
+<section id="config">
+  <h2>Configuration</h2>
+  <form id="config-form">
+    <label>Recording Duration (seconds)</label>
+    <input type="number" id="recording-duration" min="1" />
+    <button type="submit">Save</button>
+  </form>
+</section>
+<script>
+async function loadUsers() {
+  const res = await fetch('/api/users');
+  const users = await res.json();
+  const table = document.getElementById('user-table');
+  table.innerHTML = '<tr><th>Name</th><th>Phone</th><th></th></tr>' +
+    users.map(u => `<tr><td>${u.name}</td><td>${u.phone}</td><td><button onclick="editUser('${u.id}')">Edit</button> <button onclick="deleteUser('${u.id}')">Delete</button></td></tr>`).join('');
+}
+async function editUser(id) {
+  const res = await fetch('/api/users');
+  const users = await res.json();
+  const u = users.find(x => x.id === id);
+  document.getElementById('user-id').value = u.id;
+  document.getElementById('user-name').value = u.name;
+  document.getElementById('user-phone').value = u.phone;
+}
+async function deleteUser(id) {
+  await fetch('/api/users/' + id, { method: 'DELETE' });
+  loadUsers();
+}
+document.getElementById('user-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('user-id').value;
+  const name = document.getElementById('user-name').value;
+  const phone = document.getElementById('user-phone').value;
+  if (id) {
+    await fetch('/api/users/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, phone }) });
+  } else {
+    await fetch('/api/users', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, phone }) });
+  }
+  document.getElementById('user-id').value = '';
+  e.target.reset();
+  loadUsers();
+});
+
+async function loadEvents() {
+  const res = await fetch('/api/events');
+  const events = await res.json();
+  const table = document.getElementById('event-table');
+  table.innerHTML = '<tr><th>Time</th><th>Location</th><th>Success</th><th>Recording</th></tr>' +
+    events.map(ev => `<tr><td>${ev.timestamp}</td><td>${ev.location}</td><td>${ev.success}</td><td>${ev.recording ? '<a href="/recordings/' + ev.recording + '">Download</a>' : ''}</td></tr>`).join('');
+}
+
+async function loadConfig() {
+  const res = await fetch('/api/config');
+  const cfg = await res.json();
+  document.getElementById('recording-duration').value = cfg.recordingDuration;
+}
+document.getElementById('config-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const recordingDuration = parseInt(document.getElementById('recording-duration').value, 10);
+  await fetch('/api/config', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ recordingDuration }) });
+});
+
+loadUsers();
+loadEvents();
+loadConfig();
+</script>
+</body>
+</html>
