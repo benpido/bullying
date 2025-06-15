@@ -27,6 +27,7 @@ class MainActivity : FlutterActivity() {
 
     private fun changeIcon(alias: String) {
         val packageName = applicationContext.packageName
+        val current = this.componentName.className.substringAfter("$packageName.")
         val aliases = listOf(
             "MainActivity",
             "FinanceIcon",
@@ -36,13 +37,18 @@ class MainActivity : FlutterActivity() {
         )
         val pm = applicationContext.packageManager
         for (activity in aliases) {
-            val state = if (activity == alias) {
+            val enabled = activity == alias || activity == current
+            val state = if (enabled) {
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
             }
             val component = ComponentName(packageName, "$packageName.$activity")
-            pm.setComponentEnabledSetting(component, state, PackageManager.DONT_KILL_APP)
+            pm.setComponentEnabledSetting(
+                component,
+                state,
+                PackageManager.DONT_KILL_APP
+            )
         }
     }
 }
