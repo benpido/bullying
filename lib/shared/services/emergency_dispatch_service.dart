@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'log_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:location/location.dart';
@@ -16,6 +16,7 @@ class EmergencyDispatchService {
   final FlutterSecureStorage storage;
   final MessageSender sender;
   final Connectivity connectivity;
+  final LogService logService;
   StreamSubscription<ConnectivityResult>? _subscription;
 
   EmergencyDispatchService({
@@ -23,11 +24,13 @@ class EmergencyDispatchService {
     Location? location,
     FlutterSecureStorage? storage,
     Connectivity? connectivity,
+    LogService? logService,
     required this.sender,
   }) : contactService = contactService ?? ContactService(),
        location = location ?? Location(),
        storage = storage ?? const FlutterSecureStorage(),
-       connectivity = connectivity ?? Connectivity();
+       connectivity = connectivity ?? Connectivity(),
+       logService = logService ?? LogService();
 
   Future<void> dispatch(String audioData) async {
     final prefs = await SharedPreferences.getInstance();
@@ -54,8 +57,10 @@ class EmergencyDispatchService {
         await sender(c.phoneNumber, message);
       }
       await _sendPending();
+      await logService.addLog(locationStr, true);
     } else {
       await _storePending(contacts.map((c) => c.phoneNumber).toList(), message);
+      await logService.addLog(locationStr, false);
     }
   }
 

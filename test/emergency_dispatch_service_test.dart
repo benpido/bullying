@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:bullying/shared/services/log_service.dart';
+import 'package:bullying/shared/models/log_entry_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -89,17 +90,33 @@ class FakeLocation extends Fake implements Location {
   Future<LocationData> getLocation() async => data;
 }
 
+class FakeLogService extends Fake implements LogService {
+  final List<LogEntry> logs = [];
+
+  @override
+  Future<void> addLog(String location, bool success) async {
+    logs.add(
+      LogEntry(timestamp: DateTime.now(), location: location, success: success),
+    );
+  }
+
+  @override
+  Future<List<LogEntry>> getLogs() async => logs;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockContactService contactService;
   late FakeStorage storage;
   late List<String> sent;
+  late FakeLogService logService;
 
   setUp(() {
     contactService = MockContactService();
     storage = FakeStorage();
     sent = [];
+    logService = FakeLogService();
   });
 
   test('sends messages when online', () async {
@@ -114,6 +131,7 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.wifi),
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await service.dispatch('data');
@@ -133,6 +151,7 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.none),
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await offline.dispatch('data');
@@ -146,6 +165,7 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await online.dispatch('data2');
@@ -167,6 +187,7 @@ void main() {
         LocationData.fromMap({'latitude': 5.0, 'longitude': 6.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.wifi),
+      logService: logService,
       sender: (n, m) async => sent.add(m),
     );
     await service.dispatch('audio');
@@ -191,6 +212,7 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: connectivity,
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     service.startConnectivityMonitor();
@@ -216,6 +238,7 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.none),
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await offline.dispatch('data');
@@ -232,10 +255,48 @@ void main() {
         LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
       ),
       connectivity: FakeConnectivity(ConnectivityResult.mobile),
+      logService: logService,
       sender: (n, m) async => sent.add('$n:$m'),
     );
     await online.dispatch('data2');
     expect(sent.length, 2);
     expect(storage.map['pending'], isNull);
+  });
+test('log records success', () async {
+    SharedPreferences.setMockInitialValues({});
+    when(
+      () => contactService.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    final service = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 3.0, 'longitude': 4.0}),
+      ),
+      connectivity: FakeConnectivity(ConnectivityResult.wifi),
+      logService: logService,
+      sender: (n, m) async {},
+    );
+    await service.dispatch('data');
+    expect(logService.logs.single.success, isTrue);
+  });
+
+  test('log records failure', () async {
+    SharedPreferences.setMockInitialValues({});
+    when(
+      () => contactService.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    final service = EmergencyDispatchService(
+      contactService: contactService,
+      storage: storage,
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 3.0, 'longitude': 4.0}),
+      ),
+      connectivity: FakeConnectivity(ConnectivityResult.none),
+      logService: logService,
+      sender: (n, m) async {},
+    );
+    await service.dispatch('data');
+    expect(logService.logs.single.success, isFalse);
   });
 }

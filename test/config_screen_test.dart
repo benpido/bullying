@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:location/location.dart';
-
+import 'package:bullying/shared/services/log_service.dart';
+import 'package:bullying/shared/models/log_entry_model.dart';
 import 'package:bullying/modules/config/config_screen.dart';
 import 'package:bullying/shared/services/emergency_dispatch_service.dart';
 import 'package:bullying/shared/services/contact_service.dart';
@@ -68,9 +69,18 @@ class FakeLocation extends Fake implements Location {
   Future<LocationData> getLocation() async => data;
 }
 
+class FakeLogService extends Fake implements LogService {
+  @override
+  Future<void> addLog(String location, bool success) async {}
+
+  @override
+  Future<List<LogEntry>> getLogs() async => [];
+}
+
 void main() {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized()
-      as TestWidgetsFlutterBinding;
+  final binding =
+      TestWidgetsFlutterBinding.ensureInitialized()
+          as TestWidgetsFlutterBinding;
 
   setUp(() {
     binding.window.physicalSizeTestValue = const Size(800, 1600);
@@ -85,13 +95,15 @@ void main() {
   });
 
   testWidgets('fields load and persist user data', (tester) async {
-    SharedPreferences.setMockInitialValues({'userName': 'Alice', 'userPhoneNumber': '111'});
-    await tester.pumpWidget(MaterialApp(
-      home: ConfigScreen(
-        isDarkModeEnabled: false,
-        onThemeChanged: (_) {},
+    SharedPreferences.setMockInitialValues({
+      'userName': 'Alice',
+      'userPhoneNumber': '111',
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ConfigScreen(isDarkModeEnabled: false, onThemeChanged: (_) {}),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     tester.takeException();
     tester.takeException();
@@ -114,12 +126,11 @@ void main() {
 
   testWidgets('dispatch uses saved user data', (tester) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(MaterialApp(
-      home: ConfigScreen(
-        isDarkModeEnabled: false,
-        onThemeChanged: (_) {},
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ConfigScreen(isDarkModeEnabled: false, onThemeChanged: (_) {}),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     final fields = find.byType(TextField);
@@ -129,15 +140,19 @@ void main() {
     await tester.pump();
 
     final serviceContact = MockContactService();
-    when(() => serviceContact.getContacts())
-        .thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
+    when(
+      () => serviceContact.getContacts(),
+    ).thenAnswer((_) async => [ContactModel(name: 'c', phoneNumber: '1')]);
     final storage = FakeStorage();
     final sent = <String>[];
     final service = EmergencyDispatchService(
       contactService: serviceContact,
       storage: storage,
-      location: FakeLocation(LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0})),
+      location: FakeLocation(
+        LocationData.fromMap({'latitude': 1.0, 'longitude': 2.0}),
+      ),
       connectivity: FakeConnectivity(ConnectivityResult.wifi),
+      logService: FakeLogService(),
       sender: (n, m) async => sent.add(m),
     );
     await service.dispatch('audio');
