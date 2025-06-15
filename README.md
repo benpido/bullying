@@ -16,19 +16,21 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 ## Web Admin
 
-A simple Node.js web application is provided in `web_admin/` to manage users and view emergency events recorded by the mobile app.
+The administration interface is a Flutter web app located under
+`lib/src/admin_web`. It allows administrators to create and manage user
+accounts and review activity logs. Accounts created through this interface are
+persisted in Firebase Authentication and Firestore so they remain available
+across sessions.
 
-### Deployment
+### Running locally
 
-1. Install dependencies:
-   ```bash
-   cd web_admin
-   npm install
-   ```
-2. Start the server:
-   ```bash
-   npm start
-   ```
-3. Open your browser at `http://localhost:3000` to access the admin UI.
+Build and serve the web admin by running:
 
-The server stores data in `web_admin/data/` and serves encrypted recordings from `web_admin/recordings/`.
+```bash
+flutter run -d chrome lib/src/admin_web/app_admin.dart
+```
+
+The application connects to Firebase using the configuration in
+`lib/src/admin_web/firebase_options.dart`.
+Admin sessions use Firebase's local persistence so you remain logged in across
+browser refreshes.
