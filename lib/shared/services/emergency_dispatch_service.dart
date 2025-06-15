@@ -9,6 +9,7 @@ import '../models/contact_model.dart';
 import 'contact_service.dart';
 import 'dart:typed_data';
 import 'encryption_util.dart';
+import 'notification_service.dart';
 
 typedef MessageSender = Future<void> Function(String number, String message);
 
@@ -20,6 +21,7 @@ class EmergencyDispatchService {
   final Connectivity connectivity;
   final LogService logService;
   final EncryptionUtil encryption;
+  final NotificationService? notificationService;
   StreamSubscription<ConnectivityResult>? _subscription;
 
   EmergencyDispatchService({
@@ -29,6 +31,7 @@ class EmergencyDispatchService {
     Connectivity? connectivity,
     LogService? logService,
     EncryptionUtil? encryption,
+    this.notificationService,
     required this.sender,
   }) : contactService = contactService ?? ContactService(),
        location = location ?? Location(),
@@ -66,6 +69,7 @@ class EmergencyDispatchService {
     } else {
       await _storePending(contacts.map((c) => c.phoneNumber).toList(), message);
       await logService.addLog(locationStr, false);
+      await notificationService?.showDispatchFailureNotification();
     }
   }
 

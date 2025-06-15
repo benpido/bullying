@@ -67,7 +67,7 @@ class NotificationService {
     _timer?.cancel();
     _plugin.cancel(0);
   }
-Future<void> showLowStorageWarning() async {
+  Future<void> showLowStorageWarning() async {
     const androidDetails = AndroidNotificationDetails(
       'storage_channel',
       'Storage',
@@ -86,6 +86,28 @@ Future<void> showLowStorageWarning() async {
       1,
       'Espacio insuficiente',
       'No hay espacio para grabar audio',
+      details,
+    );
+  }
+  Future<void> showDispatchFailureNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'dispatch_failure_channel',
+      'Dispatch Failures',
+      channelDescription: 'Dispatch failures when offline',
+      playSound: false,
+      importance: Importance.low,
+      priority: Priority.low,
+      enableVibration: false,
+    );
+    const iosDetails = DarwinNotificationDetails(presentSound: false);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+    await _plugin.show(
+      2,
+      'Envío pendiente',
+      'Los mensajes se enviarán cuando haya conexión',
       details,
     );
   }

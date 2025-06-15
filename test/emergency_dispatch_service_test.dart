@@ -12,6 +12,7 @@ import 'package:bullying/shared/services/encryption_util.dart';
 import 'package:bullying/shared/services/emergency_dispatch_service.dart';
 import 'package:bullying/shared/services/contact_service.dart';
 import 'package:bullying/shared/models/contact_model.dart';
+import 'package:bullying/shared/services/notification_service.dart';
 
 class MockContactService extends Mock implements ContactService {}
 
@@ -104,6 +105,8 @@ class FakeLogService extends Fake implements LogService {
   Future<List<LogEntry>> getLogs() async => logs;
 }
 
+class MockNotificationService extends Mock implements NotificationService {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -111,12 +114,14 @@ void main() {
   late FakeStorage storage;
   late List<String> sent;
   late FakeLogService logService;
+  late MockNotificationService notificationService;
 
   setUp(() {
     contactService = MockContactService();
     storage = FakeStorage();
     sent = [];
     logService = FakeLogService();
+    notificationService = MockNotificationService();
   });
 
   test('sends messages when online', () async {
@@ -312,9 +317,16 @@ void main() {
       ),
       connectivity: FakeConnectivity(ConnectivityResult.none),
       logService: logService,
+      notificationService: notificationService,
       sender: (n, m) async {},
     );
+    when(
+      () => notificationService.showDispatchFailureNotification(),
+    ).thenAnswer((_) async {});
     await service.dispatch('data');
     expect(logService.logs.single.success, isFalse);
+    verify(
+      () => notificationService.showDispatchFailureNotification(),
+    ).called(1);
   });
 }
