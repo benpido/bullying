@@ -65,8 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // 3. Sincronizar contactos y servicios de fondo
-      await _contactService.syncFromBackend(uid);
+      // 3. Sincronizar solo el contacto del administrador y servicios de fondo
       await _userService.syncAdminContact(data!);
       await initializeBackgroundService();
       await PermissionService().requestIfNeeded();
