@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/routes/app_routes.dart';
 
@@ -11,6 +12,20 @@ class PinSetupScreen extends StatefulWidget {
 
 class _PinSetupScreenState extends State<PinSetupScreen> {
   final _pinController = TextEditingController();
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = FirebaseAuth.instance.currentUser;
+    if (_user == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {

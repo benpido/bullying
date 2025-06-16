@@ -5,9 +5,16 @@ import 'package:bullying/core/routes/app_routes.dart';
 import 'package:bullying/modules/auth/lock_screen.dart';
 import 'package:bullying/modules/auth/widgets/lock_input.dart';
 import 'package:bullying/modules/config/config_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core_platform_interface/test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setupFirebaseCoreMocks();
+
+  setUpAll(() async {
+    await Firebase.initializeApp();
+  });
 
   testWidgets('failing unlock keeps screen blocked', (tester) async {
     SharedPreferences.setMockInitialValues({'configPin': '1234'});
