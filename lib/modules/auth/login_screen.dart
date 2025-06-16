@@ -3,12 +3,12 @@
 /// Autentica con Firebase, sincroniza contactos y navega según la
 /// configuración del usuario.
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../../shared/services/auth_service.dart';
+import '../../shared/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/routes/app_routes.dart';
-import '../../shared/models/contact_model.dart';
 import '../../shared/services/contact_service.dart';
 import '../../shared/services/background_monitor_service.dart';
 import '../../shared/services/permission_service.dart';
@@ -25,59 +25,12 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
+  final _authService = AuthService();
+  final _userService = UserService();
   final _contactService = ContactService();
 
   String? _errorMessage;
 
-  /// Intenta cargar el documento de usuario del servidor con reintentos
-  /// exponenciales y finalmente recurre al caché local si falla la conexión.
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _loadUserDocument(
-    String uid,
-  ) async {
-    const maxRetries = 3;
-    var delay = const Duration(seconds: 1);
-
-    for (var attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await _firestore
-            .collection('users')
-            .doc(uid)
-            .get(const GetOptions(source: Source.server));
-      } on FirebaseException catch (e) {
-        if (e.code != 'unavailable') rethrow;
-      }
-      await Future.delayed(delay);
-      delay *= 2;
-    }
-
-    try {
-      return await _firestore
-          .collection('users')
-          .doc(uid)
-          .get(const GetOptions(source: Source.cache));
-    } on FirebaseException {
-      return null;
-    }
-  }
-
-  /// Sincroniza el contacto del admin localmente (actualiza o agrega).
-  Future<void> _syncAdminContact(Map<String, dynamic> data) async {
-    final name = data['adminName'] as String?;
-    final phone = data['adminPhone'] as String?;
-    if (name == null || phone == null) return;
-
-    final contacts = await _contactService.getContacts();
-    final admin = ContactModel(name: name, phoneNumber: phone);
-    final index = contacts.indexWhere((c) => c.phoneNumber == phone);
-    if (index >= 0) {
-      contacts[index] = admin;
-    } else {
-      contacts.add(admin);
-    }
-    await _contactService.setContacts(contacts);
-  }
 
   /// Maneja el proceso de login y navegación según estado de configuración.
   Future<void> _login() async {
@@ -85,16 +38,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // 1. Autenticación con email y contraseña
-      final cred = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+      final cred = await _authService.signIn(
+        _emailController.text,
+        _passwordController.text,
       );
       final uid = cred.user!.uid;
 
       // 2. Obtener datos de usuario con reintentos y fallback al caché
-      final doc = await _loadUserDocument(uid);
+      final doc = await _userService.loadUserDocument(uid);
       if (doc == null) {
-        await _auth.signOut();
+        await _authService.signOut();
         setState(
           () => _errorMessage = 'Sin conexión y sin datos locales.',
         );
@@ -107,14 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!doc.exists ||
           data?['adminId'] == null ||
           data?['disabled'] == true) {
-        await _auth.signOut();
+        await _authService.signOut();
         setState(() => _errorMessage = 'Cuenta deshabilitada o sin admin.');
         return;
       }
 
       // 3. Sincronizar contactos y servicios de fondo
       await _contactService.syncFromBackend(uid);
-      await _syncAdminContact(data!);
+      await _userService.syncAdminContact(data!);
       await initializeBackgroundService();
       await PermissionService().requestIfNeeded();
 
@@ -134,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
           : AppRoutes.currentFacade;
       Navigator.pushReplacementNamed(context, nextRoute);
     } on FirebaseException catch (e) {
-      await _auth.signOut();
+      await _authService.signOut();
       // Manejo de errores específicos de Firebase
       if (e.code == 'unavailable') {
         setState(
@@ -144,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
       }
     } catch (e) {
-      await _auth.signOut();
+      await _authService.signOut();
       // Errores genéricos
       setState(() => _errorMessage = e.toString());
     }
