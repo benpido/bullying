@@ -1,3 +1,4 @@
+/// Main application widget containing routing and background services.
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/routes/app_routes.dart';
@@ -63,16 +64,19 @@ class _MyAppState extends State<MyApp> {
         onTimeout: _startRecording,
       );
     });
-    
   }
 
   Future<void> _loadThemePreference() async {
+    // Load the preferred theme mode from persistent storage.
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isDarkModeEnabled = prefs.getBool('isDarkModeEnabled') ?? false;
     });
   }
+
   Future<void> _checkSetup() async {
+    // Ensure user configuration is complete. Redirects to the config
+    // screen when emergency contacts or PIN are missing.
     if (FirebaseAuth.instance.currentUser == null) return;
     final contacts = await _contactService.getContacts();
     final prefs = await SharedPreferences.getInstance();
@@ -86,11 +90,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadFacade() async {
+    // Restore the last selected facade so the user returns to the same
+    // screen when reopening the app.
     await _facadeService.loadSavedFacade();
     setState(() {});
   }
 
   Future<void> _loadConfig() async {
+    // Fetch remote configuration and update recording duration if needed.
     final cfg = await _configService.fetch();
     final seconds = cfg?['recordingDuration'];
     if (seconds is int) {
@@ -105,12 +112,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _startRecording() {
+    // Start audio recording for the configured duration and alert the user
+    // if there is not enough storage available on the device.
     _recordingService.recordFor30Seconds(
       onInsufficientStorage: _notificationService.showLowStorageWarning,
     );
   }
 
   void _onContactsSaved() {
+    // Once the user adds required contacts, navigate back to the home screen.
     if (_requireContacts) {
       _requireContacts = false;
       _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.home);

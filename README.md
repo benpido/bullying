@@ -3,33 +3,20 @@ This repository contains a Flutter application that helps manage emergency conta
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This repository contains a Flutter application that helps manage emergency contacts and records potential bullying incidents. The app interfaces with Firebase services for authentication and data storage.
 
-A few resources to get you started if this is your first Flutter project:
+## Running the app
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-## Web Admin
-
-The administration interface is a Flutter web app located under
-`lib/src/admin_web`. It allows administrators to create and manage user
-accounts and review activity logs. Accounts created through this interface are
-persisted in Firebase Authentication and Firestore so they remain available
-across sessions.
-
-### Running locally
-
-Build and serve the web admin by running:
+Use Flutter to run the application on an attached device or emulator:
 
 ```bash
-flutter run -d chrome lib/src/admin_web/app_admin.dart
+flutter run
 ```
 
-The application connects to Firebase using the configuration in
-`lib/src/admin_web/firebase_options.dart`.
-Admin sessions use Firebase's local persistence so you remain logged in across
-browser refreshes.
+## Running tests
+
+Execute unit and widget tests with:
+
+```bash
+flutter test
+```
