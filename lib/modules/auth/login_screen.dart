@@ -1,7 +1,7 @@
-// ---------------------------------------------------------------------------
-// Pantalla de login principal. Autentica con Firebase, sincroniza contactos,
-// y navega según configuración del usuario.
-// ---------------------------------------------------------------------------
+/// Pantalla de login principal.
+///
+/// Autentica con Firebase, sincroniza contactos y navega según la
+/// configuración del usuario.
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +13,8 @@ import '../../shared/services/contact_service.dart';
 import '../../shared/services/background_monitor_service.dart';
 import '../../shared/services/permission_service.dart';
 
+/// Widget que muestra el formulario de autenticación y maneja el proceso de
+/// inicio de sesión.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -29,8 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorMessage;
 
-  /// Intenta obtener el documento de usuario con reintentos ante errores de red.
-  Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
+  /// Obtiene el documento de usuario intentando reintentar en caso de errores
+  /// de red.
+  Future<DocumentSnapshot<Map<String, dynamic>>> _loadUserDocument(
     String uid,
   ) async {
     const maxRetries = 3;
@@ -79,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final uid = cred.user!.uid;
 
       // 2. Obtener datos de usuario con reintentos
-      final doc = await _getUserDocWithRetry(uid);
+      final doc = await _loadUserDocument(uid);
       final data = doc.data();
 
       // Validar existencia, admin asignado y cuenta habilitada
@@ -113,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
           : AppRoutes.currentFacade;
       Navigator.pushReplacementNamed(context, nextRoute);
     } on FirebaseException catch (e) {
+      await _auth.signOut();
       // Manejo de errores específicos de Firebase
       if (e.code == 'unavailable') {
         setState(
@@ -122,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
       }
     } catch (e) {
+      await _auth.signOut();
       // Errores genéricos
       setState(() => _errorMessage = e.toString());
     }
