@@ -31,25 +31,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorMessage;
 
-  /// Obtiene el documento de usuario intentando reintentar en caso de errores
-  /// de red.
-  Future<DocumentSnapshot<Map<String, dynamic>>> _loadUserDocument(
+  /// Intenta cargar el documento de usuario del servidor con reintentos
+  /// exponenciales y finalmente recurre al caché local si falla la conexión.
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _loadUserDocument(
     String uid,
   ) async {
     const maxRetries = 3;
-    const retryDelay = Duration(milliseconds: 500);
+    var delay = const Duration(seconds: 1);
 
     for (var attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        return await _firestore.collection('users').doc(uid).get();
+        return await _firestore
+            .collection('users')
+            .doc(uid)
+            .get(const GetOptions(source: Source.server));
       } on FirebaseException catch (e) {
-        if (e.code != 'unavailable' || attempt == maxRetries - 1) rethrow;
-        await Future.delayed(retryDelay);
+        if (e.code != 'unavailable') rethrow;
       }
+      await Future.delayed(delay);
+      delay *= 2;
     }
 
-    // Si sigue fallando, lanza excepción general
-    throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+    try {
+      return await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.cache));
+    } on FirebaseException {
+      return null;
+    }
   }
 
   /// Sincroniza el contacto del admin localmente (actualiza o agrega).
@@ -81,8 +91,15 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       final uid = cred.user!.uid;
 
-      // 2. Obtener datos de usuario con reintentos
+      // 2. Obtener datos de usuario con reintentos y fallback al caché
       final doc = await _loadUserDocument(uid);
+      if (doc == null) {
+        await _auth.signOut();
+        setState(
+          () => _errorMessage = 'Sin conexión y sin datos locales.',
+        );
+        return;
+      }
       final data = doc.data();
 
       // Validar existencia, admin asignado y cuenta habilitada
