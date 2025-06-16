@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
-import 'widgets/finance_summary_card.dart';
+import '../finance/widgets/finance_summary_card.dart';
 import '../../shared/services/noise_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class FinanceScreen extends StatelessWidget {
   final NoiseService noiseService;
-  const HomeScreen({super.key, required this.noiseService});
+  const FinanceScreen({super.key, required this.noiseService});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
               Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -102,7 +102,7 @@ class HomeScreen extends StatelessWidget {
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () =>

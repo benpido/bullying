@@ -8,7 +8,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'modules/config/config_screen.dart';
-import 'modules/home/home_screen.dart';
+import 'modules/facades/finance_screen.dart';
 import 'shared/services/facade_service.dart';
 import 'shared/services/shake_service.dart';
 import 'shared/services/noise_service.dart';
@@ -136,7 +136,7 @@ class _MyAppState extends State<MyApp> {
     initialRoute: widget.initialRoute,
     routes: {
       ...AppRoutes.routes,
-      AppRoutes.home: (_) => HomeScreen(noiseService: _noise!),
+      AppRoutes.home: (_) => FinanceScreen(noiseService: _noise!),
       AppRoutes.config: (_) => ConfigScreen(
         isDarkModeEnabled: _isDarkMode,
         onThemeChanged: (d) => setState(() => _isDarkMode = d),
