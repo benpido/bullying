@@ -4,6 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:location/location.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core_platform_interface/test.dart';
 import 'package:bullying/modules/config/config_screen.dart';
 import 'package:bullying/shared/services/emergency_dispatch_service.dart';
 import 'package:bullying/shared/services/contact_service.dart';
@@ -16,6 +18,11 @@ void main() {
   final binding =
       TestWidgetsFlutterBinding.ensureInitialized()
           as TestWidgetsFlutterBinding;
+  setupFirebaseCoreMocks();
+
+  setUpAll(() async {
+    await Firebase.initializeApp();
+  });
 
   setUp(() {
     binding.window.physicalSizeTestValue = const Size(800, 1600);
