@@ -15,6 +15,7 @@ import 'shared/services/contact_service.dart';
 import 'shared/services/emergency_dispatch_service.dart';
 import 'shared/services/config_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 class MyApp extends StatefulWidget {
   final String initialRoute;
@@ -28,14 +29,16 @@ class _MyAppState extends State<MyApp> {
   bool _isDarkModeEnabled = false;
   final FacadeService _facadeService = FacadeService();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-  late ShakeService _shakeService;
-  late NoiseService _noiseService;
+  ShakeService? _shakeService;
+  NoiseService? _noiseService;
   late NotificationService _notificationService;
   final RecordingService _recordingService = RecordingService();
   final ContactService _contactService = ContactService();
   final ConfigService _configService = ConfigService();
   late EmergencyDispatchService _dispatchService;
   bool _requireContacts = false;
+  StreamSubscription<User?>? _authSubscription;
+  bool _servicesStarted = false;
 
   @override
   void initState() {
@@ -48,18 +51,13 @@ class _MyAppState extends State<MyApp> {
     _checkSetup();
     _notificationService = NotificationService(_recordingService);
     _notificationService.init();
-    _shakeService = ShakeService(
-      onTrigger: () => _notificationService.showEmergencyNotification(
-        onTimeout: _startRecording,
-      ),
-    );
-    _shakeService.start();
-    _noiseService = NoiseService(
-      onTrigger: () => _notificationService.showEmergencyNotification(
-        onTimeout: _startRecording,
-      ),
-    );
-    _noiseService.start();
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        _startDetectionServices();
+      } else {
+        _stopDetectionServices();
+      }
+    });
     FlutterBackgroundService().on('emergency').listen((event) {
       _notificationService.showEmergencyNotification(
         onTimeout: _startRecording,
@@ -119,10 +117,35 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+void _startDetectionServices() {
+    if (_servicesStarted) return;
+    _servicesStarted = true;
+    _shakeService = ShakeService(
+      onTrigger: () => _notificationService.showEmergencyNotification(
+        onTimeout: _startRecording,
+      ),
+    );
+    _shakeService!.start();
+    _noiseService = NoiseService(
+      onTrigger: () => _notificationService.showEmergencyNotification(
+        onTimeout: _startRecording,
+      ),
+    );
+    _noiseService!.start();
+  }
+
+  void _stopDetectionServices() {
+    if (!_servicesStarted) return;
+    _servicesStarted = false;
+    _shakeService?.dispose();
+    _noiseService?.dispose();
+  }
+
+
   @override
   void dispose() {
-    _shakeService.dispose();
-    _noiseService.dispose();
+    _authSubscription?.cancel();
+    _stopDetectionServices();
     _dispatchService.dispose();
     _notificationService.cancelEmergency();
     super.dispose();
@@ -140,7 +163,8 @@ class _MyAppState extends State<MyApp> {
       initialRoute: widget.initialRoute,
       routes: () {
         final routes = Map<String, WidgetBuilder>.from(AppRoutes.routes);
-        routes[AppRoutes.home] = (_) => HomeScreen(noiseService: _noiseService);
+        routes[AppRoutes.home] = (_) =>
+            HomeScreen(noiseService: _noiseService!);
         routes[AppRoutes.config] = (context) => ConfigScreen(
           isDarkModeEnabled: _isDarkModeEnabled,
           onThemeChanged: updateTheme,

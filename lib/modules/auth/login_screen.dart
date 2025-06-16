@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../shared/services/contact_service.dart';
 import '../../shared/models/contact_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../shared/services/background_monitor_service.dart';
+import '../../shared/services/permission_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,10 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final adminPhone = data?['adminPhone'];
     if (adminName is String && adminPhone is String) {
       final contacts = await _contactService.getContacts();
-      final adminContact =
-          ContactModel(name: adminName, phoneNumber: adminPhone);
-      final index =
-          contacts.indexWhere((c) => c.phoneNumber == adminPhone);
+      final adminContact = ContactModel(
+        name: adminName,
+        phoneNumber: adminPhone,
+      );
+      final index = contacts.indexWhere((c) => c.phoneNumber == adminPhone);
       if (index >= 0) {
         contacts[index] = adminContact;
       } else {
@@ -59,6 +62,8 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       await _updateAdminContact(data);
+      await initializeBackgroundService();
+      await PermissionService().requestIfNeeded();
       final contacts = await _contactService.getContacts();
       final prefs = await SharedPreferences.getInstance();
       final pin = prefs.getString('configPin');
@@ -93,11 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(labelText: 'Password'),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Login'),
-              ),
-              
+              ElevatedButton(onPressed: _login, child: const Text('Login')),
               if (_error != null) ...[
                 const SizedBox(height: 8),
                 Text(_error!, style: const TextStyle(color: Colors.red)),
