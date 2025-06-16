@@ -1,7 +1,7 @@
-// ---------------------------------------------------------------------------
-// Pantalla de login principal. Autentica con Firebase, sincroniza contactos,
-// y navega según configuración del usuario.
-// ---------------------------------------------------------------------------
+/// Pantalla de login principal.
+///
+/// Autentica con Firebase, sincroniza contactos y navega según la
+/// configuración del usuario.
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +13,8 @@ import '../../shared/services/contact_service.dart';
 import '../../shared/services/background_monitor_service.dart';
 import '../../shared/services/permission_service.dart';
 
+/// Widget que muestra el formulario de autenticación y maneja el proceso de
+/// inicio de sesión.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -29,24 +31,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorMessage;
 
-  /// Intenta obtener el documento de usuario con reintentos ante errores de red.
-  Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
+  /// Intenta cargar el documento de usuario del servidor con reintentos
+  /// exponenciales y finalmente recurre al caché local si falla la conexión.
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _loadUserDocument(
     String uid,
   ) async {
     const maxRetries = 3;
-    const retryDelay = Duration(milliseconds: 500);
+    var delay = const Duration(seconds: 1);
 
     for (var attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        return await _firestore.collection('users').doc(uid).get();
+        return await _firestore
+            .collection('users')
+            .doc(uid)
+            .get(const GetOptions(source: Source.server));
       } on FirebaseException catch (e) {
-        if (e.code != 'unavailable' || attempt == maxRetries - 1) rethrow;
-        await Future.delayed(retryDelay);
+        if (e.code != 'unavailable') rethrow;
       }
+      await Future.delayed(delay);
+      delay *= 2;
     }
 
-    // Si sigue fallando, lanza excepción general
-    throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+    try {
+      return await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.cache));
+    } on FirebaseException {
+      return null;
+    }
   }
 
   /// Sincroniza el contacto del admin localmente (actualiza o agrega).
@@ -78,8 +91,15 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       final uid = cred.user!.uid;
 
-      // 2. Obtener datos de usuario con reintentos
-      final doc = await _getUserDocWithRetry(uid);
+      // 2. Obtener datos de usuario con reintentos y fallback al caché
+      final doc = await _loadUserDocument(uid);
+      if (doc == null) {
+        await _auth.signOut();
+        setState(
+          () => _errorMessage = 'Sin conexión y sin datos locales.',
+        );
+        return;
+      }
       final data = doc.data();
 
       // Validar existencia, admin asignado y cuenta habilitada
@@ -113,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
           : AppRoutes.currentFacade;
       Navigator.pushReplacementNamed(context, nextRoute);
     } on FirebaseException catch (e) {
+      await _auth.signOut();
       // Manejo de errores específicos de Firebase
       if (e.code == 'unavailable') {
         setState(
@@ -122,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
       }
     } catch (e) {
+      await _auth.signOut();
       // Errores genéricos
       setState(() => _errorMessage = e.toString());
     }
