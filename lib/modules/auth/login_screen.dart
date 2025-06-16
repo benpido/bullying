@@ -61,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _error = 'Cuenta deshabilitada');
         return;
       }
+      await _contactService.syncFromBackend(uid);
       await _updateAdminContact(data);
       await initializeBackgroundService();
       await PermissionService().requestIfNeeded();

@@ -1,6 +1,5 @@
-# bullying
-
-A new Flutter project.
+# Byllying
+This repository contains a Flutter application that helps manage emergency contacts and records potential bullying incidents. The app interfaces with Firebase services for authentication and data storage. When a user logs in, their account status and emergency contact list are retrieved from Firestore so the app can dispatch alerts to the correct numbers. Remote configuration from the backend also controls how long audio is recorded during an emergency.
 
 ## Getting Started
 
