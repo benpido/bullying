@@ -1,108 +1,121 @@
+// ---------------------------------------------------------------------------
+// Pantalla de login principal. Autentica con Firebase, sincroniza contactos,
+// y navega según configuración del usuario.
+// ---------------------------------------------------------------------------
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../core/routes/app_routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../shared/services/contact_service.dart';
-import '../../shared/models/contact_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../core/routes/app_routes.dart';
+import '../../shared/models/contact_model.dart';
+import '../../shared/services/contact_service.dart';
 import '../../shared/services/background_monitor_service.dart';
 import '../../shared/services/permission_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  String? _error;
-  final ContactService _contactService = ContactService();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  final _contactService = ContactService();
 
-  Future<void> _updateAdminContact(Map<String, dynamic>? data) async {
-    final adminName = data?['adminName'];
-    final adminPhone = data?['adminPhone'];
-    if (adminName is String && adminPhone is String) {
-      final contacts = await _contactService.getContacts();
-      final adminContact = ContactModel(
-        name: adminName,
-        phoneNumber: adminPhone,
-      );
-      final index = contacts.indexWhere((c) => c.phoneNumber == adminPhone);
-      if (index >= 0) {
-        contacts[index] = adminContact;
-      } else {
-        contacts.add(adminContact);
-      }
-      await _contactService.setContacts(contacts);
-    }
-  }
+  String? _errorMessage;
+
+  /// Intenta obtener el documento de usuario con reintentos ante errores de red.
   Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
-    String uid,
-  ) async {
-    FirebaseException? lastError;
-    for (var i = 0; i < 3; i++) {
+      String uid) async {
+    const maxRetries = 3;
+    const retryDelay = Duration(milliseconds: 500);
+
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        return await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .get();
+        return await _firestore.collection('users').doc(uid).get();
       } on FirebaseException catch (e) {
-        if (e.code != 'unavailable') rethrow;
-        lastError = e;
-        await Future.delayed(const Duration(milliseconds: 500));
+        if (e.code != 'unavailable' || attempt == maxRetries - 1) rethrow;
+        await Future.delayed(retryDelay);
       }
     }
-    throw lastError ??
-        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
-  }
-  Future<void> _login() async {
-    setState(() => _error = null);
-    try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _email.text,
-        password: _password.text,
-      );
 
+    // Si sigue fallando, lanza excepción general
+    throw FirebaseException(
+        plugin: 'cloud_firestore', code: 'unavailable');
+  }
+
+  /// Sincroniza el contacto del admin localmente (actualiza o agrega).
+  Future<void> _syncAdminContact(Map<String, dynamic> data) async {
+    final name = data['adminName'] as String?;
+    final phone = data['adminPhone'] as String?;
+    if (name == null || phone == null) return;
+
+    final contacts = await _contactService.getContacts();
+    final admin = ContactModel(name: name, phoneNumber: phone);
+    final index = contacts.indexWhere((c) => c.phoneNumber == phone);
+    if (index >= 0) {
+      contacts[index] = admin;
+    } else {
+      contacts.add(admin);
+    }
+    await _contactService.setContacts(contacts);
+  }
+
+  /// Maneja el proceso de login y navegación según estado de configuración.
+  Future<void> _login() async {
+    setState(() => _errorMessage = null);
+
+    try {
+      // 1. Autenticación con email y contraseña
+      final cred = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
       final uid = cred.user!.uid;
-      DocumentSnapshot<Map<String, dynamic>> doc;
-      try {
-        doc = await _getUserDocWithRetry(uid);
-      } on FirebaseException catch (e) {
-        if (e.code == 'unavailable') {
-          await FirebaseAuth.instance.signOut();
-          setState(
-            () => _error = 'No hay conexión con el servidor. Intente de nuevo.',
-          );
-          return;
-        }
-        rethrow;
-      }
+
+      // 2. Obtener datos de usuario con reintentos
+      final doc = await _getUserDocWithRetry(uid);
       final data = doc.data();
-      final hasAdmin = data?['adminId'] != null;
-      final disabled = data?['disabled'] == true;
-      if (!doc.exists || !hasAdmin || disabled) {
-        await FirebaseAuth.instance.signOut();
-        setState(() => _error = 'Cuenta deshabilitada');
+
+      // Validar existencia, admin asignado y cuenta habilitada
+      if (!doc.exists || data?['adminId'] == null || data?['disabled'] == true) {
+        await _auth.signOut();
+        setState(() => _errorMessage = 'Cuenta deshabilitada o sin admin.');
         return;
       }
+
+      // 3. Sincronizar contactos y servicios de fondo
       await _contactService.syncFromBackend(uid);
-      await _updateAdminContact(data);
+      await _syncAdminContact(data!);
       await initializeBackgroundService();
       await PermissionService().requestIfNeeded();
+
+      // 4. Decidir ruta según configuración local (contactos y PIN)
       final contacts = await _contactService.getContacts();
       final prefs = await SharedPreferences.getInstance();
-      final pin = prefs.getString('configPin');
+      final pin = prefs.getString('configPin') ?? '';
+
       if (!mounted) return;
-      if (contacts.isEmpty || pin == null || pin.isEmpty) {
-        Navigator.pushReplacementNamed(context, AppRoutes.config);
+      final nextRoute = contacts.isEmpty || pin.isEmpty
+          ? AppRoutes.config
+          : AppRoutes.splash;
+      Navigator.pushReplacementNamed(context, nextRoute);
+    } on FirebaseException catch (e) {
+      // Manejo de errores específicos de Firebase
+      if (e.code == 'unavailable') {
+        setState(
+            () => _errorMessage = 'Sin conexión al servidor. Intenta luego.');
       } else {
-        Navigator.pushReplacementNamed(context, AppRoutes.splash);
+        setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
       }
     } catch (e) {
-      setState(() => _error = e.toString());
+      // Errores genéricos
+      setState(() => _errorMessage = e.toString());
     }
   }
 
@@ -111,25 +124,28 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: Center(
-        child: SizedBox(
-          width: 300,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _email,
+                controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
               ),
               TextField(
-                controller: _password,
+                controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
               ),
               const SizedBox(height: 16),
               ElevatedButton(onPressed: _login, child: const Text('Login')),
-              if (_error != null) ...[
+              if (_errorMessage != null) ...[
                 const SizedBox(height: 8),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ],
             ],
           ),

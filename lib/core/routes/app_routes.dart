@@ -4,7 +4,7 @@ import '../../modules/splash/splash_screen.dart';
 import '../../modules/emergency/emergency_screen.dart';
 import '../../modules/auth/lock_screen.dart';
 import '../../modules/auth/login_screen.dart';
-
+import '../../modules/auth/pin_setup_screen.dart';
 import '../../modules/facades/calendar_screen.dart';
 import '../../modules/facades/calculator_screen.dart';
 import '../../modules/facades/notes_screen.dart';
@@ -16,6 +16,7 @@ class AppRoutes {
   static const String emergency = '/emergency';
   static const String config = '/config';
   static const String lock = '/lock';
+  static const String pinSetup = '/setup-pin';
 
   // Fachadas
   static const String calendar = '/facade/calendar';
@@ -27,6 +28,7 @@ class AppRoutes {
   static final Map<String, WidgetBuilder> routes = {
     splash: (_) => const SplashScreen(),
     login: (_) => const LoginScreen(),
+    pinSetup: (_) => const PinSetupScreen(),
     
     emergency: (_) => const EmergencyScreen(),
     //config: (_) => ConfigScreen(),

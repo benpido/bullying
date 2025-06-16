@@ -3,58 +3,68 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/models/contact_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Servicio para gestionar contactos localmente (SharedPreferences)
+/// y sincronizarlos con Firestore.
 class ContactService {
+  // Clave para almacenar la lista de contactos en SharedPreferences
   static const String _contactsKey = 'contacts';
-  final FirebaseFirestore? _firestore;
 
-  ContactService({FirebaseFirestore? firestore}) : _firestore = firestore;
+  // Instancia de Firestore inyectable para facilitar pruebas unitarias
+  final FirebaseFirestore _firestore;
 
-  // Salvar contatos no SharedPreferences
+  ContactService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Guarda la lista de contactos en SharedPreferences.
+  /// Utiliza `toJson()` de `ContactModel` para serializar.
   Future<void> setContacts(List<ContactModel> contacts) async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> contactsJson =
-        contacts
-            .map(
-              (contact) => json.encode({
-                'name': contact.name,
-                'phoneNumber': contact.phoneNumber,
-              }),
-            )
-            .toList();
-    await prefs.setStringList(_contactsKey, contactsJson);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> contactsJson = contacts
+          .map((c) => json.encode(c.toJson()))
+          .toList();
+      await prefs.setStringList(_contactsKey, contactsJson);
+    } catch (e) {
+      // Loguear el error para diagnóstico
+      print('Error al guardar contactos: \$e');
+      rethrow;
+    }
   }
 
-  // Carregar contatos do SharedPreferences
+  /// Recupera los contactos de SharedPreferences.
+  /// Devuelve lista vacía si ocurre un error o no hay datos.
   Future<List<ContactModel>> getContacts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String>? contactsJson = prefs.getStringList(_contactsKey);
-    if (contactsJson != null) {
-      return contactsJson.map((contact) {
-        final Map<String, dynamic> contactMap = json.decode(contact);
-        return ContactModel(
-          name: contactMap['name'],
-          phoneNumber: contactMap['phoneNumber'],
-        );
-      }).toList();
-    }
-    return []; // Se não houver contatos, retorna uma lista vazia
-  }
-  Future<void> syncFromBackend(String uid, {FirebaseFirestore? firestore}) async {
-    final db = firestore ?? _firestore ?? FirebaseFirestore.instance;
     try {
-      final snapshot = await db
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? listJson = prefs.getStringList(_contactsKey);
+      if (listJson == null) return [];
+      return listJson
+          .map((item) => ContactModel.fromJson(json.decode(item)))
+          .toList();
+    } catch (e) {
+      print('Error al cargar contactos: \$e');
+      return [];
+    }
+  }
+
+  /// Sincroniza los contactos desde Firestore para el usuario [uid]
+  /// y actualiza el almacenamiento local.
+  Future<void> syncFromBackend(String uid) async {
+    try {
+      final snapshot = await _firestore
           .collection('users')
           .doc(uid)
           .collection('contacts')
           .get();
-      final contacts = snapshot.docs.map((d) {
-        final data = d.data();
-        return ContactModel(
-          name: data['name'] ?? '',
-          phoneNumber: data['phoneNumber'] ?? '',
-        );
-      }).toList();
+
+      final contacts = snapshot.docs
+          .map((doc) => ContactModel.fromJson(doc.data()))
+          .toList();
+
       await setContacts(contacts);
-    } catch (_) {}
+    } catch (e) {
+      print('Error al sincronizar contactos: \$e');
+      // Opcional: reintentar o notificar al usuario
+    }
   }
 }

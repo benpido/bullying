@@ -1,5 +1,8 @@
-// Entry point for the mobile application.
-// Sets up Firebase and required services before launching [MyApp].
+// ---------------------------------------------------------------------------
+// Punto de entrada de la aplicación móvil. Inicializa Firebase y determina
+// si se debe mostrar la pantalla de login o continuar a la app dependiendo del
+// usuario autenticado.
+// ---------------------------------------------------------------------------
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'package:firebase_core/firebase_core.dart';
