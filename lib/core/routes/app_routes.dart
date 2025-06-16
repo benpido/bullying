@@ -1,6 +1,5 @@
 // lib/core/routes/app_routes.dart
 import 'package:flutter/material.dart';
-import '../../modules/splash/splash_screen.dart';
 import '../../modules/emergency/emergency_screen.dart';
 import '../../modules/auth/lock_screen.dart';
 import '../../modules/auth/login_screen.dart';
@@ -10,7 +9,6 @@ import '../../modules/facades/calculator_screen.dart';
 import '../../modules/facades/notes_screen.dart';
 
 class AppRoutes {
-  static const String splash = '/splash';
   static const String home = '/home';
   static const String login = '/login';
   static const String emergency = '/emergency';
@@ -26,10 +24,9 @@ class AppRoutes {
   static String currentFacade = home;
 
   static final Map<String, WidgetBuilder> routes = {
-    splash: (_) => const SplashScreen(),
     login: (_) => const LoginScreen(),
     pinSetup: (_) => const PinSetupScreen(),
-    
+
     emergency: (_) => const EmergencyScreen(),
     //config: (_) => ConfigScreen(),
     lock: (context) {
