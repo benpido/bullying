@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Intenta obtener el documento de usuario con reintentos ante errores de red.
   Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
-      String uid,
+    String uid,
   ) async {
     const maxRetries = 3;
     const retryDelay = Duration(milliseconds: 500);
@@ -108,13 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      final nextRoute = contacts.isEmpty ? AppRoutes.config : AppRoutes.splash;
+      final nextRoute = contacts.isEmpty
+          ? AppRoutes.config
+          : AppRoutes.currentFacade;
       Navigator.pushReplacementNamed(context, nextRoute);
     } on FirebaseException catch (e) {
       // Manejo de errores específicos de Firebase
       if (e.code == 'unavailable') {
         setState(
-            () => _errorMessage = 'Sin conexión al servidor. Intenta luego.',
+          () => _errorMessage = 'Sin conexión al servidor. Intenta luego.',
         );
       } else {
         setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
