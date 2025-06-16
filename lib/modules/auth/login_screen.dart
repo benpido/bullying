@@ -31,7 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Intenta obtener el documento de usuario con reintentos ante errores de red.
   Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
-      String uid) async {
+      String uid,
+  ) async {
     const maxRetries = 3;
     const retryDelay = Duration(milliseconds: 500);
 
@@ -45,8 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // Si sigue fallando, lanza excepción general
-    throw FirebaseException(
-        plugin: 'cloud_firestore', code: 'unavailable');
+    throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
   }
 
   /// Sincroniza el contacto del admin localmente (actualiza o agrega).
@@ -83,7 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = doc.data();
 
       // Validar existencia, admin asignado y cuenta habilitada
-      if (!doc.exists || data?['adminId'] == null || data?['disabled'] == true) {
+      if (!doc.exists ||
+          data?['adminId'] == null ||
+          data?['disabled'] == true) {
         await _auth.signOut();
         setState(() => _errorMessage = 'Cuenta deshabilitada o sin admin.');
         return;
@@ -101,15 +103,19 @@ class _LoginScreenState extends State<LoginScreen> {
       final pin = prefs.getString('configPin') ?? '';
 
       if (!mounted) return;
-      final nextRoute = contacts.isEmpty || pin.isEmpty
-          ? AppRoutes.config
-          : AppRoutes.splash;
+      if (pin.isEmpty) {
+        Navigator.pushReplacementNamed(context, AppRoutes.pinSetup);
+        return;
+      }
+
+      final nextRoute = contacts.isEmpty ? AppRoutes.config : AppRoutes.splash;
       Navigator.pushReplacementNamed(context, nextRoute);
     } on FirebaseException catch (e) {
       // Manejo de errores específicos de Firebase
       if (e.code == 'unavailable') {
         setState(
-            () => _errorMessage = 'Sin conexión al servidor. Intenta luego.');
+            () => _errorMessage = 'Sin conexión al servidor. Intenta luego.',
+        );
       } else {
         setState(() => _errorMessage = e.message ?? 'Error al iniciar sesión.');
       }
@@ -142,10 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(onPressed: _login, child: const Text('Login')),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 8),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
+                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
               ],
             ],
           ),

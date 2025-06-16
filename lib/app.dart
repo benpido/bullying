@@ -44,7 +44,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _notification = NotificationService(_recording)..init();
-    _dispatch = EmergencyDispatchService(sender: (_,__) async{})..startConnectivityMonitor();
+    _dispatch = EmergencyDispatchService(sender: (_, __) async {})
+      ..startConnectivityMonitor();
     _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuthChange);
     FlutterBackgroundService().on('emergency').listen((_) => _showEmergency());
     _loadAll();
@@ -65,10 +66,21 @@ class _MyAppState extends State<MyApp> {
     if (FirebaseAuth.instance.currentUser == null) return;
     final contacts = await _contactService.getContacts();
     final pin = prefs.getString('configPin') ?? '';
-    if (contacts.isEmpty || pin.isEmpty) {
+    if (pin.isEmpty) {
+      _requireContacts = contacts.isEmpty;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _navigatorKey.currentState?.pushReplacementNamed(
+          AppRoutes.pinSetup,
+        ),
+      );
+      return;
+    }
+
+    if (contacts.isEmpty) {
       _requireContacts = true;
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config)
+        (_) =>
+            _navigatorKey.currentState?.pushReplacementNamed(AppRoutes.config),
       );
     }
   }
@@ -91,9 +103,12 @@ class _MyAppState extends State<MyApp> {
     _noise?.dispose();
   }
 
-  void _showEmergency() => _notification.showEmergencyNotification(onTimeout: _startRecording);
+  void _showEmergency() =>
+      _notification.showEmergencyNotification(onTimeout: _startRecording);
 
-  void _startRecording() => _recording.recordFor30Seconds(onInsufficientStorage: _notification.showLowStorageWarning);
+  void _startRecording() => _recording.recordFor30Seconds(
+    onInsufficientStorage: _notification.showLowStorageWarning,
+  );
 
   void _onContactsSaved() {
     if (!_requireContacts) return;
@@ -128,8 +143,8 @@ class _MyAppState extends State<MyApp> {
         onContactsSaved: _onContactsSaved,
       ),
     },
-    locale: const Locale('es','ES'),
-    supportedLocales: const [Locale('es','ES')],
+    locale: const Locale('es', 'ES'),
+    supportedLocales: const [Locale('es', 'ES')],
     localizationsDelegates: const [
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
