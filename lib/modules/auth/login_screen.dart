@@ -100,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         return;
       }
+
       final data = doc.data();
 
       // Validar existencia, admin asignado y cuenta habilitada
