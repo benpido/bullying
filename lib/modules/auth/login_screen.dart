@@ -39,7 +39,25 @@ class _LoginScreenState extends State<LoginScreen> {
       await _contactService.setContacts(contacts);
     }
   }
-
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getUserDocWithRetry(
+    String uid,
+  ) async {
+    FirebaseException? lastError;
+    for (var i = 0; i < 3; i++) {
+      try {
+        return await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+      } on FirebaseException catch (e) {
+        if (e.code != 'unavailable') rethrow;
+        lastError = e;
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    }
+    throw lastError ??
+        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+  }
   Future<void> _login() async {
     setState(() => _error = null);
     try {
@@ -49,10 +67,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final uid = cred.user!.uid;
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      DocumentSnapshot<Map<String, dynamic>> doc;
+      try {
+        doc = await _getUserDocWithRetry(uid);
+      } on FirebaseException catch (e) {
+        if (e.code == 'unavailable') {
+          await FirebaseAuth.instance.signOut();
+          setState(
+            () => _error = 'No hay conexión con el servidor. Intente de nuevo.',
+          );
+          return;
+        }
+        rethrow;
+      }
       final data = doc.data();
       final hasAdmin = data?['adminId'] != null;
       final disabled = data?['disabled'] == true;
