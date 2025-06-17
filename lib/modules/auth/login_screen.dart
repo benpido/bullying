@@ -56,17 +56,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final data = doc.data();
 
-      // Validar existencia, admin asignado y cuenta habilitada
-      if (!doc.exists ||
-          data?['adminId'] == null ||
-          data?['disabled'] == true) {
-        await _authService.signOut();
-        setState(() => _errorMessage = 'Cuenta deshabilitada o sin admin.');
-        return;
+      // Sincronizar solo el contacto del administrador cuando los datos
+      // del usuario estén disponibles.
+      if (data != null) {
+        await _userService.syncAdminContact(data);
       }
 
-      // 3. Sincronizar solo el contacto del administrador y servicios de fondo
-      await _userService.syncAdminContact(data!);
+      // 3. Iniciar servicios de fondo
       await initializeBackgroundService();
       await PermissionService().requestIfNeeded();
 
