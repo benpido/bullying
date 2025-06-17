@@ -4,6 +4,7 @@ import '../../shared/services/contact_service.dart';
 import 'widgets/contact_form.dart';
 import '../../core/routes/app_routes.dart';
 import '../../shared/services/facade_service.dart';
+import '../../shared/services/admin_service.dart';
 
 class ConfigScreen extends StatefulWidget {
   final bool isDarkModeEnabled;
@@ -25,15 +26,20 @@ class ConfigScreenState extends State<ConfigScreen> {
   late bool _isDarkModeEnabled;
   final ContactService contactService = ContactService();
   final FacadeService facadeService = FacadeService();
+  final AdminService _adminService = AdminService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
+  String _adminName = '';
+  String _adminPhone = '';
+  String _adminEmail = '';
 
   @override
   void initState() {
     super.initState();
     _isDarkModeEnabled = widget.isDarkModeEnabled;
     _loadUserInfo();
+    _loadAdminInfo();
   }
 
   @override
@@ -62,6 +68,15 @@ class ConfigScreenState extends State<ConfigScreen> {
     _nameController.text = prefs.getString('userName') ?? '';
     _phoneController.text = prefs.getString('userPhoneNumber') ?? '';
     _pinController.text = prefs.getString('configPin') ?? '';
+  }
+
+  Future<void> _loadAdminInfo() async {
+    final info = await _adminService.getSavedContactInfo();
+    setState(() {
+      _adminName = info['name'] ?? '';
+      _adminPhone = info['phone'] ?? '';
+      _adminEmail = info['email'] ?? '';
+    });
   }
 
   Future<void> _saveUserInfo() async {
@@ -171,6 +186,13 @@ class ConfigScreenState extends State<ConfigScreen> {
             const Text('Seleccionar Fachada:', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 10),
             _buildFacadeCarousel(),
+            const SizedBox(height: 20),
+
+            const Text('Datos del Administrador:', style: TextStyle(fontSize: 16)),
+            const SizedBox(height: 10),
+            Text('Nombre: $_adminName'),
+            Text('Teléfono: $_adminPhone'),
+            Text('Email: $_adminEmail'),
             const SizedBox(height: 20),
 
             TextField(
